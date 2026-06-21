@@ -1,0 +1,24 @@
+match,team,player_name,status,start_probability,expected_start_minutes,sub_probability,expected_sub_minutes,confirmed,timestamp
+Brazil vs Haiti,Brazil,Alisson,starter,1.0,90,0.0,0,1,2026-06-19T18:00:00Z
+Brazil vs Haiti,Brazil,Danilo,starter,1.0,82,0.0,0,1,2026-06-19T18:00:00Z
+Brazil vs Haiti,Brazil,Marquinhos,starter,1.0,88,0.0,0,1,2026-06-19T18:00:00Z
+Brazil vs Haiti,Brazil,Gabriel Magalhães,starter,1.0,88,0.0,0,1,2026-06-19T18:00:00Z
+Brazil vs Haiti,Brazil,Douglas Santos,starter,1.0,82,0.0,0,1,2026-06-19T18:00:00Z
+Brazil vs Haiti,Brazil,Casemiro,starter,1.0,78,0.0,0,1,2026-06-19T18:00:00Z
+Brazil vs Haiti,Brazil,Bruno Guimarães,starter,1.0,80,0.0,0,1,2026-06-19T18:00:00Z
+Brazil vs Haiti,Brazil,Raphinha,starter,1.0,76,0.0,0,1,2026-06-19T18:00:00Z
+Brazil vs Haiti,Brazil,Lucas Paquetá,starter,1.0,76,0.0,0,1,2026-06-19T18:00:00Z
+Brazil vs Haiti,Brazil,Vinícius Júnior,starter,1.0,78,0.0,0,1,2026-06-19T18:00:00Z
+Brazil vs Haiti,Brazil,Matheus Cunha,starter,1.0,74,0.0,0,1,2026-06-19T18:00:00Z
+Brazil vs Haiti,Haiti,Johny Placide,starter,1.0,90,0.0,0,1,2026-06-19T18:00:00Z
+Brazil vs Haiti,Haiti,Carlens Arcus,starter,1.0,86,0.0,0,1,2026-06-19T18:00:00Z
+Brazil vs Haiti,Haiti,Ricardo Adé,starter,1.0,86,0.0,0,1,2026-06-19T18:00:00Z
+Brazil vs Haiti,Haiti,Jean-Kévin Duverne,starter,1.0,86,0.0,0,1,2026-06-19T18:00:00Z
+Brazil vs Haiti,Haiti,Hannes Delcroix,starter,1.0,86,0.0,0,1,2026-06-19T18:00:00Z
+Brazil vs Haiti,Haiti,Martin Expérience,starter,1.0,82,0.0,0,1,2026-06-19T18:00:00Z
+Brazil vs Haiti,Haiti,Josué Casimir,starter,1.0,78,0.0,0,1,2026-06-19T18:00:00Z
+Brazil vs Haiti,Haiti,Danley Jean Jacques,starter,1.0,82,0.0,0,1,2026-06-19T18:00:00Z
+Brazil vs Haiti,Haiti,Jean-Ricner Bellegarde,starter,1.0,82,0.0,0,1,2026-06-19T18:00:00Z
+Brazil vs Haiti,Haiti,Ruben Providence,starter,1.0,74,0.0,0,1,2026-06-19T18:00:00Z
+Brazil vs Haiti,Haiti,Frantzdy Pierrot,starter,1.0,78,0.0,0,1,2026-06-19T18:00:00Z
+Brazil vs Haiti,Haiti,Duckens Nazon,substitute,0.0,0,0.45,25,1,2026-06-19T18:00:00Z

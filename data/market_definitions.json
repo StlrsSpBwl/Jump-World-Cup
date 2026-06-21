@@ -1,0 +1,108 @@
+{
+  "_defaults": {
+    "includes_extra_time": false,
+    "stat_provider": "contest_rules_unconfirmed",
+    "warning": "Verify SportsPredict settlement rules and stat provider before entry."
+  },
+  "match_winner": {
+    "market_type": "h2h",
+    "definition_match": true,
+    "tie_resolves_as": "separate_draw",
+    "includes_extra_time": false,
+    "stat_provider": "official_result",
+    "notes": "Regulation-time 1X2 only."
+  },
+  "more_than": {
+    "market_type": null,
+    "definition_match": false,
+    "tie_resolves_as": "no",
+    "includes_extra_time": false,
+    "stat_provider": "verify_contest_feed",
+    "notes": "Assumes a tie resolves No; verify against SportsPredict rules."
+  },
+  "halftime_more_than": {
+    "market_type": null,
+    "definition_match": false,
+    "tie_resolves_as": "no",
+    "includes_extra_time": false,
+    "stat_provider": "verify_contest_feed"
+  },
+  "second_half_more_than": {
+    "market_type": null,
+    "definition_match": false,
+    "tie_resolves_as": "no",
+    "includes_extra_time": false,
+    "stat_provider": "verify_contest_feed"
+  },
+  "threshold": {
+    "market_type": null,
+    "definition_match": false,
+    "tie_resolves_as": "not_applicable",
+    "includes_extra_time": false,
+    "stat_provider": "verify_contest_feed"
+  },
+  "total_goals_2_or_fewer": {
+    "market_type": "totals",
+    "line": 2.5,
+    "selection": "under",
+    "definition_match": true,
+    "tie_resolves_as": "not_applicable",
+    "includes_extra_time": false,
+    "stat_provider": "official_result"
+  },
+  "both_teams_score_and_3_plus": {
+    "market_type": "btts_and_over_2_5",
+    "definition_match": false,
+    "tie_resolves_as": "not_applicable",
+    "includes_extra_time": false,
+    "stat_provider": "official_result",
+    "notes": "Do not synthesize from separate BTTS and totals prices without dependence."
+  },
+  "penalty_awarded": {
+    "market_type": "penalty_awarded",
+    "definition_match": true,
+    "tie_resolves_as": "not_applicable",
+    "includes_extra_time": false,
+    "stat_provider": "official_match_report",
+    "reject_market_types": ["penalty_scored"]
+  },
+  "anytime_goalscorer": {
+    "market_type": "player_anytime_goalscorer",
+    "definition_match": true,
+    "tie_resolves_as": "not_applicable",
+    "includes_extra_time": false,
+    "stat_provider": "official_result",
+    "notes": "Standard anytime-goalscorer settlement excludes own goals."
+  },
+  "player_goal_or_assist": {
+    "market_type": "player_goal_or_assist",
+    "definition_match": true,
+    "tie_resolves_as": "not_applicable",
+    "includes_extra_time": false,
+    "stat_provider": "official_result",
+    "notes": "Player goal or assist, excluding own goals and own-goal assists."
+  },
+  "cards": {
+    "market_type": "cards",
+    "definition_match": false,
+    "tie_resolves_as": "not_applicable",
+    "includes_extra_time": false,
+    "stat_provider": "verify_contest_feed",
+    "notes": "Confirm whether a second yellow/red counts as one or two cards."
+  },
+  "shots_on_target": {
+    "market_type": "player_shots_on_target",
+    "definition_match": false,
+    "tie_resolves_as": "not_applicable",
+    "includes_extra_time": false,
+    "stat_provider": "verify_opta",
+    "notes": "Provider definitions differ for blocked shots and keeper touches."
+  },
+  "offsides": {
+    "market_type": "offsides",
+    "definition_match": false,
+    "tie_resolves_as": "not_applicable",
+    "includes_extra_time": false,
+    "stat_provider": "verify_opta"
+  }
+}

@@ -1,0 +1,35 @@
+features:
+  - name: Single generative match simulator
+    status: active
+    introduced_in_match:
+    description: One coherent simulation supplies all related prop probabilities so correlated events remain internally consistent.
+
+  - name: Negative-binomial count models
+    status: active
+    introduced_in_match:
+    description: Overdispersed event counts with explicit tie mass for team-versus-team comparisons.
+
+  - name: Game-state dynamics
+    status: active
+    introduced_in_match:
+    description: Six match segments adjust attacking and defensive event rates as teams lead, trail, or chase.
+
+  - name: Market-implied latent dominance
+    status: active
+    introduced_in_match:
+    description: Supremacy information is translated into a shared latent factor that shifts territorial event rates.
+
+  - name: ESS-gated shrinkage
+    status: active
+    introduced_in_match:
+    description: Thin samples shrink toward pooled priors, with manager-regime weighting controlling stale evidence.
+
+  - name: Recalibration layers
+    status: active
+    introduced_in_match:
+    description: Temporal backtests choose and fit a final probability recalibration layer for Brier performance.
+
+  - name: Field-bias correction
+    status: experimental
+    introduced_in_match:
+    description: Optional bounded adjustment reserved for recurring competition-level crowd or field bias.

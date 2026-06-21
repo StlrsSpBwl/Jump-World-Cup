@@ -1,0 +1,7 @@
+match,market,selection,probability,book,timestamp,line,source,definition
+Mexico vs South Korea,1X2,Mexico,0.47,Consensus,2026-06-18T20:00:00Z,,manual_benchmark,Claude/GPT de-vigged consensus
+Mexico vs South Korea,1X2,Draw,0.29,Consensus,2026-06-18T20:00:00Z,,manual_benchmark,Claude/GPT de-vigged consensus
+Mexico vs South Korea,1X2,South Korea,0.24,Consensus,2026-06-18T20:00:00Z,,manual_benchmark,Claude/GPT de-vigged consensus
+Mexico vs South Korea,totals,Over,0.43,Consensus,2026-06-18T20:00:00Z,2.5,manual_benchmark,Claude/GPT de-vigged consensus
+Mexico vs South Korea,totals,Under,0.57,Consensus,2026-06-18T20:00:00Z,2.5,manual_benchmark,Claude/GPT de-vigged consensus
+Mexico vs South Korea,player_goal_or_assist,Son Heung-min,0.32,Consensus,2026-06-18T20:00:00Z,,manual_benchmark,Claude/GPT player prop benchmark

@@ -1,0 +1,23 @@
+match,team,player_name,status,start_probability,expected_start_minutes,sub_probability,expected_sub_minutes,confirmed,timestamp
+Mexico vs South Korea,Mexico,Raúl Rangel,starter,1.0,90,0.0,0,1,2026-06-18T20:00:00Z
+Mexico vs South Korea,Mexico,Jorge Sánchez,starter,1.0,82,0.0,0,1,2026-06-18T20:00:00Z
+Mexico vs South Korea,Mexico,Edson Álvarez,starter,1.0,86,0.0,0,1,2026-06-18T20:00:00Z
+Mexico vs South Korea,Mexico,Johan Vásquez,starter,1.0,86,0.0,0,1,2026-06-18T20:00:00Z
+Mexico vs South Korea,Mexico,Erik Lira,starter,1.0,76,0.0,0,1,2026-06-18T20:00:00Z
+Mexico vs South Korea,Mexico,Luis Romo,starter,1.0,76,0.0,0,1,2026-06-18T20:00:00Z
+Mexico vs South Korea,Mexico,Raúl Jiménez,starter,1.0,72,0.0,0,1,2026-06-18T20:00:00Z
+Mexico vs South Korea,Mexico,Julián Quiñones,starter,1.0,78,0.0,0,1,2026-06-18T20:00:00Z
+Mexico vs South Korea,Mexico,Jesús Gallardo,starter,1.0,82,0.0,0,1,2026-06-18T20:00:00Z
+Mexico vs South Korea,Mexico,Roberto Alvarado,starter,1.0,76,0.0,0,1,2026-06-18T20:00:00Z
+Mexico vs South Korea,Mexico,Brian Gutiérrez,starter,1.0,70,0.0,0,1,2026-06-18T20:00:00Z
+Mexico vs South Korea,South Korea,Kim Seung-gyu,starter,1.0,90,0.0,0,1,2026-06-18T20:00:00Z
+Mexico vs South Korea,South Korea,Han-Beom Lee,starter,1.0,86,0.0,0,1,2026-06-18T20:00:00Z
+Mexico vs South Korea,South Korea,Gi-Hyuk Lee,starter,1.0,82,0.0,0,1,2026-06-18T20:00:00Z
+Mexico vs South Korea,South Korea,Kim Min-jae,starter,1.0,90,0.0,0,1,2026-06-18T20:00:00Z
+Mexico vs South Korea,South Korea,Hwang In-beom,starter,1.0,82,0.0,0,1,2026-06-18T20:00:00Z
+Mexico vs South Korea,South Korea,Son Heung-min,starter,1.0,86,0.0,0,1,2026-06-18T20:00:00Z
+Mexico vs South Korea,South Korea,Seung Ho Paik,starter,1.0,78,0.0,0,1,2026-06-18T20:00:00Z
+Mexico vs South Korea,South Korea,Jae-sung Lee,starter,1.0,78,0.0,0,1,2026-06-18T20:00:00Z
+Mexico vs South Korea,South Korea,Kim Moon-hwan,starter,1.0,82,0.0,0,1,2026-06-18T20:00:00Z
+Mexico vs South Korea,South Korea,Kang-in Lee,starter,1.0,78,0.0,0,1,2026-06-18T20:00:00Z
+Mexico vs South Korea,South Korea,Young-woo Seol,starter,1.0,82,0.0,0,1,2026-06-18T20:00:00Z

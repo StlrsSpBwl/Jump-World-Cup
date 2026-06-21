@@ -1,0 +1,2 @@
+player_name,national_team,club,competition,season,minutes,position,national_role,expected_minutes,likely_starter,shots_per90,shots_on_target_per90,goals_per90,assists_per90,fouls_committed_per90,fouls_drawn_per90,yellow_cards_per90,penalty_taker,set_piece_role,source
+Example Player,Example Team,Example Club,England Premier League,2025-2026,1800,forward,forward,78,1,2.40,0.95,0.38,0.20,1.10,1.40,0.12,1,0.25,manual_club_csv

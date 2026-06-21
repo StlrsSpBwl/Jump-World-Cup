@@ -1,0 +1,197 @@
+{
+  "database_path": "data/worldcup_props.sqlite",
+  "raw_cache_dir": "data/raw",
+  "artifact_path": "artifacts/model.json",
+  "market_csv_path": "data/markets.csv",
+  "market_definition_path": "data/market_definitions.json",
+  "club_dominance_csv_path": "data/club_dominance.csv",
+  "competition_strength_csv_path": "data/competition_strength.csv",
+  "team_registry_path": "data/team_confederations.csv",
+  "start_date": "2020-07-01",
+  "simulations": 100000,
+  "random_seed": 2026,
+  "tie_handling": "strict",
+  "friendly_weight": 0.45,
+  "recency_half_life_days": 730.0,
+  "team_prior_matches": 8.0,
+  "club_prior_matches": 24.0,
+  "referee_prior_matches": 12.0,
+  "context_prior_matches": 15.0,
+  "max_unknown_confederation_share": 0.05,
+  "liquid_market_blend_weight": 0.7,
+  "thin_market_blend_weight": 0.5,
+  "fallback_total_goals": 2.55,
+  "dixon_coles_rho": -0.08,
+  "goal_first_half_share": 0.44,
+  "market_goal_prior_precision": 0.25,
+  "latent_flow_method": "shared_normal",
+  "use_game_state_dynamics": true,
+  "use_market_count_propagation": false,
+  "use_foul_style_interaction": false,
+  "calibration_method": "auto",
+  "latent_flow_std": 0.55,
+  "latent_flow_supremacy_shift": 0.65,
+  "latent_flow_loadings": {
+    "goals": 0.3,
+    "corners": 0.42,
+    "offsides": 0.28,
+    "shots_on_target": 0.38
+  },
+  "use_supremacy_weighted_market_fusion": false,
+  "supremacy_market_fusion_slope": 0.35,
+  "supremacy_market_fusion_max_extra": 0.35,
+  "supremacy_market_fusion_ess_threshold": 12.0,
+  "market_count_elasticity": {
+    "corners": 0.35,
+    "offsides": 0.2,
+    "shots_on_target": 0.55
+  },
+  "use_ess_gating": false,
+  "ess_probability_prior_matches": 8.0,
+  "use_field_bias": false,
+  "field_bias_max_deviation": 0.03,
+  "use_crowd_anchoring": true,
+  "crowd_anchor_min_drift_rows": 6,
+  "crowd_anchor_recent_window": 20,
+  "crowd_anchor_max_drift": 0.04,
+  "crowd_anchor_drift_weight": 0.5,
+  "use_coverage_safeguards": true,
+  "coverage_probability_prior_matches": 12.0,
+  "market_coverage_ess_credit": 6.0,
+  "max_market_count_volume_multiplier": 1.35,
+  "territory_share_bounds": {
+    "corners": [0.18, 0.82],
+    "offsides": [0.22, 0.78],
+    "shots_on_target": [0.16, 0.84]
+  },
+  "territory_rate_multiplier_bounds": {
+    "corners": [0.30, 2.00],
+    "offsides": [0.30, 2.00],
+    "shots_on_target": [0.30, 2.00]
+  },
+  "use_possession_ess_gating": false,
+  "use_possession_opponent_strength_adjustment": false,
+  "possession_ess_scale": {
+    "corners": 10.0,
+    "offsides": 12.0,
+    "shots_on_target": 12.0
+  },
+  "possession_rate_split_base_weight": {
+    "corners": 0.45,
+    "offsides": 0.35,
+    "shots_on_target": 0.35
+  },
+  "possession_rate_split_max_weight": {
+    "corners": 0.88,
+    "offsides": 0.80,
+    "shots_on_target": 0.78
+  },
+  "possession_supremacy_absent_territory_multiplier": 0.55,
+  "player_event_base_rates": {
+    "shots": 0.55,
+    "shots_on_target": 0.35,
+    "second_half_shots_on_target": 0.20,
+    "goals": 0.16,
+    "assists": 0.12,
+    "goal_or_assist": 0.25
+  },
+  "player_role_base_rates": {
+    "shots_on_target": {
+      "forward": 0.55,
+      "winger": 0.45,
+      "attacking_mid": 0.45,
+      "central_mid": 0.30,
+      "fullback": 0.20,
+      "center_back": 0.12,
+      "unknown": 0.35
+    },
+    "second_half_shots_on_target": {
+      "forward": 0.38,
+      "winger": 0.32,
+      "attacking_mid": 0.32,
+      "central_mid": 0.21,
+      "fullback": 0.14,
+      "center_back": 0.08,
+      "unknown": 0.24
+    },
+    "goal_or_assist": {
+      "forward": 0.30,
+      "winger": 0.22,
+      "attacking_mid": 0.22,
+      "central_mid": 0.14,
+      "fullback": 0.10,
+      "center_back": 0.08,
+      "unknown": 0.18
+    },
+    "goals": {
+      "forward": 0.30,
+      "winger": 0.20,
+      "attacking_mid": 0.18,
+      "central_mid": 0.10,
+      "fullback": 0.06,
+      "center_back": 0.05,
+      "unknown": 0.16
+    },
+    "assists": {
+      "forward": 0.14,
+      "winger": 0.18,
+      "attacking_mid": 0.20,
+      "central_mid": 0.12,
+      "fullback": 0.10,
+      "center_back": 0.04,
+      "unknown": 0.12
+    }
+  },
+  "player_role_antizero_floors": {
+    "shots_on_target": {
+      "forward": 0.25,
+      "winger": 0.25,
+      "attacking_mid": 0.25
+    },
+    "second_half_shots_on_target": {
+      "forward": 0.18,
+      "winger": 0.18,
+      "attacking_mid": 0.18
+    }
+  },
+  "player_prior_effective_matches": 8.0,
+  "player_thin_profile_upside_weight": 0.50,
+  "player_team_context_exponent": 0.65,
+  "player_team_context_bounds": [0.70, 1.45],
+  "manager_pre_regime_weight": 0.35,
+  "manager_regime_start_dates": {},
+  "global_cards_per_match": 4.2,
+  "card_dispersion": 8.0,
+  "card_foul_elasticity": 0.65,
+  "penalty_base_probability": 0.23,
+  "red_card_base_probability": 0.11,
+  "red_card_prior_matches": 80.0,
+  "penalty_box_pressure_elasticity": 0.35,
+  "red_card_foul_elasticity": 0.55,
+  "default_player_start_probability": 0.55,
+  "default_player_sub_probability": 0.3,
+  "default_start_minutes": 75.0,
+  "default_sub_minutes": 22.0,
+  "player_other_share_prior": 3.0,
+  "game_state_chasing_multiplier": {
+    "corners": 1.18,
+    "offsides": 1.08,
+    "shots_on_target": 1.12,
+    "fouls": 0.97
+  },
+  "game_state_leading_multiplier": {
+    "corners": 0.88,
+    "offsides": 0.95,
+    "shots_on_target": 0.92,
+    "fouls": 1.03
+    ,"cards": 1.08
+  },
+  "backtest_prop_weights": {},
+  "first_half_fallback_share": {
+    "corners": 0.46,
+    "fouls": 0.49,
+    "offsides": 0.47,
+    "shots_on_target": 0.45,
+    "cards": 0.44
+  }
+}

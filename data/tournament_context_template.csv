@@ -1,0 +1,4 @@
+match,team,points,goal_difference,group_rank,qualification_probability,qualified,eliminated,must_win,goal_difference_priority,coast_if_leading,damage_limitation,tactical_style,notes
+Brazil vs Haiti,Brazil,6,4,1,0.95,0,0,0,0,1,0,flair_transition,Secure favorite: reduce 2H tempo if leading by 2+
+Brazil vs Haiti,Haiti,0,-3,4,0.05,0,0,0,1,0,1,low_block,Damage limitation if match gets away
+Spain vs Saudi Arabia,Spain,1,0,2,0.82,0,0,0,0,1,0,structured_possession,Secure structured favorite: reduce goal urgency but preserve 2H control volume

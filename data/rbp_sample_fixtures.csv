@@ -1,0 +1,3 @@
+match_label,kickoff,tz,competition_stage,notes
+Belgium vs Egypt,2026-06-18 15:00,America/New_York,Group stage,Example local-time import
+Canada vs Bosnia,2026-06-18T20:00:00Z,UTC,Group stage,Example UTC import

@@ -1,0 +1,7 @@
+question_text,crowd_prob,outcome,weight
+Over 2.5 total goals,0.55,1,1.0
+Both teams to score,0.59,0,1.0
+Home team to win,0.52,1,1.2
+Over 9.5 corners,0.48,1,1.0
+Over 3.5 total cards,0.61,1,0.7
+Penalty awarded in the match,0.29,void,0.6

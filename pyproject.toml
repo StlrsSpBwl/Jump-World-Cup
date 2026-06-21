@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "worldcup-props"
+version = "0.1.0"
+description = "Calibrated probability forecasts for international football match-stat props"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "beautifulsoup4>=4.12",
+  "numpy>=1.26",
+  "pandas>=2.1",
+  "requests>=2.31",
+  "scipy>=1.11",
+  "streamlit>=1.58",
+  "plotly>=5.24",
+  "pdfplumber>=0.11",
+  "PyMuPDF>=1.24",
+  "rapidfuzz>=3.10",
+  "pydantic>=2.9",
+  "PyYAML>=6.0",
+  "kaleido>=0.2.1",
+  "plyer>=2.1",
+]
+
+[project.optional-dependencies]
+soccerdata = ["soccerdata>=1.8"]
+dev = ["pytest>=8.0", "ruff>=0.5"]
+
+[project.scripts]
+worldcup-props = "worldcup_props.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src", "."]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"

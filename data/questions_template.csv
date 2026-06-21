@@ -1,0 +1,4 @@
+home,away,stat,type,k,referee,competition_type,home_elo,away_elo,neutral
+USA,Paraguay,offsides,threshold,2,,world_cup,,,1
+South Africa,Mexico,fouls,more_than,,,world_cup,,,1
+USA,Paraguay,corners,halftime_more_than,,,world_cup,,,1

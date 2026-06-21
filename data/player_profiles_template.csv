@@ -1,0 +1,2 @@
+player_name,team,shots_per90,shots_on_target_per90,goals_per90,assists_per90,box_touches_per90,penalty_taker,set_piece_role,player_role,effective_matches,source
+Example Player,Example Team,2.40,0.95,0.38,0.20,5.50,1,0.50,forward,12,club_data

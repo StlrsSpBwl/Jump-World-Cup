@@ -1,0 +1,6 @@
+match,market,selection,probability,book,timestamp,line,source,definition
+Türkiye vs Paraguay,1X2,Türkiye,0.48,Consensus,2026-06-19T21:00:00Z,,manual_benchmark,Public odds approximate de-vigged consensus
+Türkiye vs Paraguay,1X2,Draw,0.27,Consensus,2026-06-19T21:00:00Z,,manual_benchmark,Public odds approximate de-vigged consensus
+Türkiye vs Paraguay,1X2,Paraguay,0.25,Consensus,2026-06-19T21:00:00Z,,manual_benchmark,Public odds approximate de-vigged consensus
+Türkiye vs Paraguay,totals,Over,0.46,Consensus,2026-06-19T21:00:00Z,2.5,manual_benchmark,Public odds approximate de-vigged consensus
+Türkiye vs Paraguay,totals,Under,0.54,Consensus,2026-06-19T21:00:00Z,2.5,manual_benchmark,Public odds approximate de-vigged consensus

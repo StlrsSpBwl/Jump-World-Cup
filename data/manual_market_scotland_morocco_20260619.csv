@@ -1,0 +1,6 @@
+match,market,selection,probability,book,timestamp,line,source,definition
+Scotland vs Morocco,1X2,Scotland,0.19,Consensus,2026-06-19T15:00:00Z,,manual_benchmark,Public odds approximate de-vigged consensus
+Scotland vs Morocco,1X2,Draw,0.27,Consensus,2026-06-19T15:00:00Z,,manual_benchmark,Public odds approximate de-vigged consensus
+Scotland vs Morocco,1X2,Morocco,0.54,Consensus,2026-06-19T15:00:00Z,,manual_benchmark,Public odds approximate de-vigged consensus
+Scotland vs Morocco,totals,Over,0.43,Consensus,2026-06-19T15:00:00Z,2.5,manual_benchmark,Public odds approximate de-vigged consensus
+Scotland vs Morocco,totals,Under,0.57,Consensus,2026-06-19T15:00:00Z,2.5,manual_benchmark,Public odds approximate de-vigged consensus

@@ -1,0 +1,23 @@
+match,team,player_name,status,start_probability,expected_start_minutes,sub_probability,expected_sub_minutes,confirmed,timestamp
+Scotland vs Morocco,Scotland,Angus Gunn,starter,1.0,90,0.0,0,1,2026-06-19T15:00:00Z
+Scotland vs Morocco,Scotland,Andrew Robertson,starter,1.0,86,0.0,0,1,2026-06-19T15:00:00Z
+Scotland vs Morocco,Scotland,Grant Hanley,starter,1.0,86,0.0,0,1,2026-06-19T15:00:00Z
+Scotland vs Morocco,Scotland,Kieran Tierney,starter,1.0,82,0.0,0,1,2026-06-19T15:00:00Z
+Scotland vs Morocco,Scotland,Jack Hendry,starter,1.0,86,0.0,0,1,2026-06-19T15:00:00Z
+Scotland vs Morocco,Scotland,Nathan Patterson,starter,1.0,78,0.0,0,1,2026-06-19T15:00:00Z
+Scotland vs Morocco,Scotland,Scott McTominay,starter,1.0,86,0.0,0,1,2026-06-19T15:00:00Z
+Scotland vs Morocco,Scotland,John McGinn,starter,1.0,82,0.0,0,1,2026-06-19T15:00:00Z
+Scotland vs Morocco,Scotland,Ryan Christie,starter,1.0,78,0.0,0,1,2026-06-19T15:00:00Z
+Scotland vs Morocco,Scotland,Lewis Ferguson,starter,1.0,78,0.0,0,1,2026-06-19T15:00:00Z
+Scotland vs Morocco,Scotland,Che Adams,starter,1.0,76,0.0,0,1,2026-06-19T15:00:00Z
+Scotland vs Morocco,Morocco,Bono,starter,1.0,90,0.0,0,1,2026-06-19T15:00:00Z
+Scotland vs Morocco,Morocco,Achraf Hakimi,starter,1.0,86,0.0,0,1,2026-06-19T15:00:00Z
+Scotland vs Morocco,Morocco,Noussair Mazraoui,starter,1.0,84,0.0,0,1,2026-06-19T15:00:00Z
+Scotland vs Morocco,Morocco,Issa Diop,starter,1.0,86,0.0,0,1,2026-06-19T15:00:00Z
+Scotland vs Morocco,Morocco,Chadi Riad,starter,1.0,82,0.0,0,1,2026-06-19T15:00:00Z
+Scotland vs Morocco,Morocco,Ayyoub Bouaddi,starter,1.0,72,0.0,0,1,2026-06-19T15:00:00Z
+Scotland vs Morocco,Morocco,Azzedine Ounahi,starter,1.0,82,0.0,0,1,2026-06-19T15:00:00Z
+Scotland vs Morocco,Morocco,Ismael Saibari,starter,1.0,78,0.0,0,1,2026-06-19T15:00:00Z
+Scotland vs Morocco,Morocco,Bilal El Khannouss,starter,1.0,76,0.0,0,1,2026-06-19T15:00:00Z
+Scotland vs Morocco,Morocco,Neil El Aynaoui,starter,1.0,76,0.0,0,1,2026-06-19T15:00:00Z
+Scotland vs Morocco,Morocco,Brahim Díaz,starter,1.0,82,0.0,0,1,2026-06-19T15:00:00Z

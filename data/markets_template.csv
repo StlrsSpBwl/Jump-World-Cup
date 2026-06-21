@@ -1,0 +1,6 @@
+match,market,selection,decimal_odds,book,timestamp,line,definition
+South Korea vs Czechia,1X2,South Korea,2.40,Pinnacle,2026-06-12T12:00:00Z,,regulation_time
+South Korea vs Czechia,1X2,Draw,3.25,Pinnacle,2026-06-12T12:00:00Z,,regulation_time
+South Korea vs Czechia,1X2,Czechia,2.95,Pinnacle,2026-06-12T12:00:00Z,,regulation_time
+South Korea vs Czechia,total_goals,Over,1.95,Pinnacle,2026-06-12T12:00:00Z,2.5,
+South Korea vs Czechia,total_goals,Under,1.91,Pinnacle,2026-06-12T12:00:00Z,2.5,

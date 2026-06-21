@@ -1,0 +1,2 @@
+match,team,player_name,status,start_probability,expected_start_minutes,sub_probability,expected_sub_minutes,confirmed,timestamp
+Example Team vs Opponent,Example Team,Example Player,uncertain,0.70,76,0.20,22,0,2026-06-15T12:00:00Z

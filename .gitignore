@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+artifacts/
+data/raw/
+data/*.sqlite
+data/*.sqlite-*
+config.json
+rbp.db
+rbp.db-*
+data/ocr_cache/

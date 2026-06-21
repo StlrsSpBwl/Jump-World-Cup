@@ -1,0 +1,6 @@
+match,market,selection,probability,book,timestamp,line,source,definition
+Brazil vs Haiti,1X2,Brazil,0.89,Consensus,2026-06-19T18:00:00Z,,manual_benchmark,Public odds approximate de-vigged consensus
+Brazil vs Haiti,1X2,Draw,0.08,Consensus,2026-06-19T18:00:00Z,,manual_benchmark,Public odds approximate de-vigged consensus
+Brazil vs Haiti,1X2,Haiti,0.03,Consensus,2026-06-19T18:00:00Z,,manual_benchmark,Public odds approximate de-vigged consensus
+Brazil vs Haiti,totals,Over,0.66,Consensus,2026-06-19T18:00:00Z,2.5,manual_benchmark,Public odds approximate de-vigged consensus
+Brazil vs Haiti,totals,Under,0.34,Consensus,2026-06-19T18:00:00Z,2.5,manual_benchmark,Public odds approximate de-vigged consensus
