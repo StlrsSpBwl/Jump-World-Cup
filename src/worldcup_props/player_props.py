@@ -19,6 +19,7 @@ from __future__ import annotations
 import re
 
 import numpy as np
+from scipy.stats import poisson
 
 # Event -> which per-90 rate field drives it.
 EVENT_RATE_FIELD = {
@@ -70,14 +71,18 @@ def _rate(event: str, role: str, per90_override: float | None) -> float:
     return ROLE_RATES.get(role, ROLE_RATES["midfielder"])[field]
 
 
-def _event_given_minutes(event: str, rate_per90: float, minutes: float) -> float:
-    """P(at least one event in `minutes`), constant-hazard on the per-90 rate."""
+def _event_given_minutes(event: str, rate_per90: float, minutes: float, k: int = 1) -> float:
+    """P(at least `k` events in `minutes`), Poisson on the per-90 rate.
+
+    k=1 reduces to 1 - exp(-lambda) (a single event); k>=2 handles "2+ shots on
+    target" style props, which are far rarer than the 1+ version.
+    """
     span = minutes
     if event == "second_half_shots_on_target":
         # only the second-half window counts; cap the span at a half
         span = min(minutes, 45.0)
     lam = rate_per90 * span / 90.0
-    return float(1.0 - np.exp(-lam))
+    return float(1.0 - poisson.cdf(k - 1, lam))
 
 
 def player_prop_probability(
@@ -85,6 +90,7 @@ def player_prop_probability(
     role: str,
     status: str,
     *,
+    k: int = 1,
     per90: float | None = None,
     sub_minutes: float = DEFAULT_SUB_MINUTES,
     start_minutes: float = DEFAULT_START_MINUTES,
@@ -93,6 +99,7 @@ def player_prop_probability(
     """Probability of a player prop given confirmed lineup status.
 
     status: 'starter' | 'sub'/'bench' | 'out'
+    k: event threshold (1 = "scores / 1+ SOT"; 2 = "2+ shots on target").
     Returns {'probability', 'basis', and components}.
     """
     status = status.strip().lower()
@@ -103,7 +110,7 @@ def player_prop_probability(
 
     if status in {"sub", "bench", "substitute"}:
         appear = appearance_prob if appearance_prob is not None else SUB_APPEARANCE.get(role, 0.45)
-        cond = _event_given_minutes(event, rate, sub_minutes)
+        cond = _event_given_minutes(event, rate, sub_minutes, k)
         p = float(appear * cond)
         return {
             "probability": p,
@@ -115,6 +122,6 @@ def player_prop_probability(
         }
 
     # starter
-    p = _event_given_minutes(event, rate, start_minutes)
+    p = _event_given_minutes(event, rate, start_minutes, k)
     return {"probability": float(p), "basis": "starter", "rate_per90": rate,
             "start_minutes": start_minutes}

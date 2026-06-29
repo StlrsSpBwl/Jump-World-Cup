@@ -83,6 +83,37 @@ def test_team_both_halves_and_any_player_sot_route():
     assert all(r["probability"] is not None for r in res)
 
 
+def test_player_prop_threshold_lowers_2plus_sot():
+    # "2+ SOT" must be far lower than "1+ SOT" for the same benched player
+    res = forecast_card("Germany", "Paraguay", 2.2, 0.7,
+                        ["Will Jamal Musiala have 2 or more shots on target in regulation?",
+                         "Will Jamal Musiala have 1 or more shots on target in regulation?"],
+                        db=str(DB), lineup_status={"Jamal Musiala": "sub"},
+                        roles={"Jamal Musiala": "attacking_mid"})
+    two = _by_q(res, "2 or more shots")["probability"]
+    one = _by_q(res, "1 or more shots")["probability"]
+    assert two < one * 0.5          # 2+ is much rarer than 1+
+    assert two < 0.10               # benched + 2+ threshold -> low
+
+
+def test_win_first_goal_and_there_be_phrasings_route():
+    res = forecast_card("Germany", "Paraguay", 2.2, 0.7,
+                        ["Will Germany win in regulation?",
+                         "Will Germany score the first goal of the match?",
+                         "Will there be 3 or more offside calls in regulation?"],
+                        db=str(DB))
+    assert _by_q(res, "germany win")["basis"] == "win"
+    assert _by_q(res, "first goal")["basis"] == "team_scores_first"
+    assert _by_q(res, "offside calls")["basis"] == "count_total:offsides:full"
+    assert all(r["probability"] is not None for r in res)
+
+
+def test_winning_at_halftime_not_misrouted_to_win():
+    res = forecast_card("Germany", "Paraguay", 2.2, 0.7,
+                        ["Will Germany be ahead at halftime?"], db=str(DB))
+    assert res[0]["basis"] == "ht_lead"
+
+
 def test_outcome_and_total_routing():
     res = forecast_card("Canada", "South Africa", 1.4, 1.0,
                         ["Will both teams score AND the match have 3 or more total goals?",

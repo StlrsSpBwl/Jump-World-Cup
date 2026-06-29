@@ -31,8 +31,8 @@ DEFAULT_MODEL = "claude-haiku-4-5"  # cheapest fast model; user-overridable
 KINDS = [
     "player_prop", "advance", "win", "draw", "ht_lead", "btts", "btts_and_3plus",
     "total_under", "total_over", "second_half_more_goals", "second_half_2plus",
-    "team_scores_2h", "team_both_halves", "team_total_goals", "goal_before_break",
-    "count_threshold", "count_total", "count_compare", "base_rate",
+    "team_scores_2h", "team_both_halves", "team_total_goals", "first_goal",
+    "goal_before_break", "count_threshold", "count_total", "count_compare", "base_rate",
 ]
 EVENTS = ["goals", "shots_on_target", "goal_or_assist", "second_half_shots_on_target"]
 STATS = ["fouls", "corners", "offsides", "cards", "shots_on_target"]
@@ -78,6 +78,8 @@ kind meanings:
 - team_both_halves: "will [team] score in BOTH halves". Set subject_team.
 - team_total_goals: "will [team] score N or more goals" (a named team's own goal count).
   Set subject_team and threshold. NOT the match total (that's total_over/total_under).
+- first_goal: "will [team] score the first goal / open the scoring". Set subject_team.
+- player_prop with threshold: "[player] has 2+ shots on target" -> set player, event, threshold=2.
 - goal_before_break: "a goal before the first hydration break".
 - count_threshold: "[team] has X+ [stat]". Set subject_team, stat, threshold, period.
 - count_total: "X+ total [stat]" (both teams combined). Set stat, threshold, period.

@@ -62,6 +62,15 @@ def _team_both_halves(lam_h, lam_a, subject_is_home):
     return float((1.0 - math.exp(-l1)) * (1.0 - math.exp(-l2)))
 
 
+def _team_scores_first(lam_h, lam_a, subject_is_home):
+    """P(team scores the first goal) = goal-rate share * P(>=1 goal in the match)."""
+    total = lam_h + lam_a
+    if total <= 0:
+        return 0.0
+    share = (lam_h if subject_is_home else lam_a) / total
+    return float(share * (1.0 - math.exp(-total)))
+
+
 def _num_threshold(q: str) -> int | None:
     m = re.search(r"(\d+)\s*(?:or more|\+|or more total)", q)
     if m:
@@ -110,20 +119,21 @@ def _route(q, home, away, g, lam_h, lam_a, db, lineup_status, roles):
         for name, status in lineup_status.items():
             if name.lower() in ql:
                 role = (roles or {}).get(name, "forward")
-                r = player_prop_probability(event, role, status)
+                k = _num_threshold(q) or 1
+                r = player_prop_probability(event, role, status, k=k)
                 return r["probability"], f"player:{r['basis']}:{event}"
 
     # --- knockout / outcome ---
     if "advance" in ql:
         side = "home" if _subject_team(q, home, away) == home else "away"
         return advance_probability(g["home_win"], g["draw"], g["away_win"], side), "advance"
-    if "win the match" in ql:
-        return (g["home_win"] if _subject_team(q, home, away) == home else g["away_win"]), "win"
-    if "end in a tie" in ql or ("halftime" in ql and "tied" in ql) or ("at halftime" in ql and "tie" in ql):
-        return (g["ht_draw"] if "halftime" in ql else g["draw"]), "draw"
     if "ahead at halftime" in ql or ("winning" in ql and "halftime" in ql):
         sub = _subject_team(q, home, away)
         return (g["ht_home_lead"] if sub == home else g["ht_away_lead"]), "ht_lead"
+    if re.search(r"\bwin\b", ql) and "halftime" not in ql and _subject_team(q, home, away):
+        return (g["home_win"] if _subject_team(q, home, away) == home else g["away_win"]), "win"
+    if "end in a tie" in ql or ("halftime" in ql and "tied" in ql) or ("at halftime" in ql and "tie" in ql):
+        return (g["ht_draw"] if "halftime" in ql else g["draw"]), "draw"
 
     # --- totals / BTTS / goals timing ---
     if "both teams score" in ql:
@@ -156,14 +166,21 @@ def _route(q, home, away, g, lam_h, lam_a, db, lineup_status, roles):
     if "more than 1 goal" in ql and _subject_team(q, home, away):  # team brace, named team
         sub = _subject_team(q, home, away)
         return _team_total_goals(lam_h if sub == home else lam_a, 2), "team_total_goals"
+    if "first goal" in ql or "open the scoring" in ql or "score first" in ql:
+        sub = _subject_team(q, home, away)
+        if sub:
+            return _team_scores_first(lam_h, lam_a, sub == home), "team_scores_first"
 
     # --- count props ---
     stat = _stat(q)
     period = _period(q)
     if stat and db:
         k = _num_threshold(q)
-        # "X+ total <stat>" — both teams combined, no subject needed.
-        if "total" in ql and k is not None:
+        # match-total stat: "X+ total <stat>" OR "will there be X+ <stat>" (no team, no player)
+        is_match_total = "total" in ql or (
+            ("there be" in ql or "there are" in ql) and "player" not in ql
+        )
+        if is_match_total and k is not None:
             ra = team_count_rate(db, home, stat, period)
             rb = team_count_rate(db, away, stat, period)
             if ra and rb:
@@ -235,7 +252,7 @@ def route_spec(spec, home, away, g, lam_h, lam_a, db, lineup_status, roles):
                     status = st
                     break
         role = (roles or {}).get(spec.player, "forward")
-        r = player_prop_probability(spec.event, role, status)
+        r = player_prop_probability(spec.event, role, status, k=spec.threshold or 1)
         return r["probability"], f"player:{r['basis']}:{spec.event}"
     if kind == "advance":
         side = "home" if sub == home else "away"
@@ -267,6 +284,8 @@ def route_spec(spec, home, away, g, lam_h, lam_a, db, lineup_status, roles):
         return _team_total_goals(lam, spec.threshold), "team_total_goals"
     if kind == "team_both_halves":
         return _team_both_halves(lam_h, lam_a, sub == home), "team_both_halves"
+    if kind == "first_goal":
+        return _team_scores_first(lam_h, lam_a, sub == home), "team_scores_first"
     if kind in ("count_threshold", "count_total", "count_compare") and db and spec.stat:
         stat, period, k = spec.stat, spec.period, spec.threshold
         if kind == "count_total" and k is not None:
