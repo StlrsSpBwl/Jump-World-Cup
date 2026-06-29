@@ -23,7 +23,9 @@ from .db import initialize
 from .domain import Question, QuestionType, Stat
 from .evaluation import ingest_results_csv, log_result, results_report
 from .forecast import forecast_match_event, forecast_player_event, forecast_question
+from .fifa_dataset import ingest_fifa_world_cup_dataset
 from .market import OddsAPIClient, ingest_market_csv, ingest_odds_api
+from .market_ingest import SearchResult, ingest_market_profile, summarize_market_profile
 from .model import ModelArtifact, fit_model
 from .players import (
     ingest_lineups_csv,
@@ -86,8 +88,28 @@ def build_parser() -> argparse.ArgumentParser:
     )
     tournament_context.add_argument("path")
 
+    fifa_dataset = subparsers.add_parser(
+        "ingest-fifa-world-cup-dataset",
+        help="Ingest mominullptr/FIFA-World-Cup-2026-Dataset match and context data",
+    )
+    fifa_dataset.add_argument(
+        "path",
+        help="Local checkout or extracted directory containing matches.csv",
+    )
+
     markets = subparsers.add_parser("ingest-markets", help="Ingest definition-matched odds")
     markets.add_argument("path")
+
+    dk = subparsers.add_parser(
+        "ingest-draftkings-har",
+        help="Parse a DraftKings sportsbook HAR capture into de-vigged match markets",
+    )
+    dk.add_argument("har", help="Path to the DraftKings HAR exported from the browser")
+    dk.add_argument(
+        "--csv-out",
+        default=None,
+        help="Optional path to also write the normalized match-market CSV",
+    )
 
     odds_api = subparsers.add_parser(
         "ingest-odds-api", help="Fetch and ingest match markets from The Odds API"
@@ -108,6 +130,24 @@ def build_parser() -> argparse.ArgumentParser:
         "--markets",
         default="h2h,totals,spreads,btts,player_goal_scorer",
     )
+
+    market_profile = subparsers.add_parser(
+        "market-profile",
+        help="Build an auditable market profile from captured search results JSON",
+    )
+    _add_match_arguments(market_profile)
+    market_profile.add_argument(
+        "--search-results",
+        required=True,
+        help="JSON list of {title,url,snippet} search results captured by the agent",
+    )
+    market_profile.add_argument(
+        "--player",
+        action="append",
+        default=[],
+        help="Flagged player to search/parse for anytime goalscorer odds",
+    )
+    market_profile.add_argument("--json", action="store_true", help="Emit JSON instead of text")
 
     fbref = subparsers.add_parser(
         "fbref-export", help="Export raw soccerdata/FBref tables for normalization"
@@ -218,6 +258,7 @@ def build_parser() -> argparse.ArgumentParser:
             "away_win",
             "draw",
             "under_2_5_goals",
+            "second_half_more_goals",
         ],
         required=True,
     )
@@ -234,6 +275,31 @@ def build_parser() -> argparse.ArgumentParser:
     batch.add_argument("--simulations", type=int)
     batch.add_argument("--seed", type=int)
     _add_market_toggle(batch)
+
+    card = subparsers.add_parser(
+        "forecast-card",
+        help="Route a full card of questions through the closed-form + sub-discount engines",
+    )
+    card.add_argument("--home", required=True)
+    card.add_argument("--away", required=True)
+    card.add_argument("--lambda-home", type=float, required=True, help="Market goal expectancy, home")
+    card.add_argument("--lambda-away", type=float, required=True, help="Market goal expectancy, away")
+    card.add_argument(
+        "--question", action="append", default=[], help="A question (repeatable)"
+    )
+    card.add_argument("--questions", help="Path to a file with one question per line")
+    card.add_argument(
+        "--lineup",
+        help='JSON of confirmed statuses: {"Player Name": "sub"} or '
+        '{"Player Name": {"status": "sub", "role": "forward"}}',
+    )
+    card.add_argument(
+        "--llm",
+        action="store_true",
+        help="Use the LLM question parser for arbitrary wording (needs anthropic + ANTHROPIC_API_KEY)",
+    )
+    card.add_argument("--model", default="claude-haiku-4-5", help="Model for the LLM parser")
+    card.add_argument("--json", action="store_true", help="Emit JSON instead of a table")
 
     results = subparsers.add_parser("ingest-results", help="Ingest post-match result log CSV")
     results.add_argument("path")
@@ -309,9 +375,35 @@ def main(argv: list[str] | None = None) -> int:
         count = ingest_tournament_context_csv(database_path, args.path)
         print(json.dumps({"tournament_context_rows_ingested": count}))
         return 0
+    if args.command == "ingest-fifa-world-cup-dataset":
+        result = ingest_fifa_world_cup_dataset(database_path, args.path)
+        print(json.dumps(result.__dict__, indent=2, sort_keys=True))
+        return 0
     if args.command == "ingest-markets":
         count = ingest_market_csv(database_path, args.path)
         print(json.dumps({"quotes_ingested": count}))
+        return 0
+    if args.command == "ingest-draftkings-har":
+        from .draftkings import parse_har_file, write_market_csv
+
+        result = parse_har_file(args.har)
+        csv_path = args.csv_out or str(
+            Path(settings.raw_cache_dir) / f"draftkings_{result.event.event_id or 'event'}.csv"
+        )
+        write_market_csv(result.rows, csv_path)
+        count = ingest_market_csv(database_path, csv_path)
+        print(
+            json.dumps(
+                {
+                    "match": result.event.name,
+                    "quotes_ingested": count,
+                    "rows": len(result.rows),
+                    "skipped": result.skipped,
+                    "csv": csv_path,
+                },
+                indent=2,
+            )
+        )
         return 0
     if args.command in {"ingest-odds-api", "refresh-lineup-markets"}:
         client = OddsAPIClient(settings.raw_cache_dir)
@@ -331,6 +423,27 @@ def main(argv: list[str] | None = None) -> int:
                 }
             )
         )
+        return 0
+    if args.command == "market-profile":
+        search_results = json.loads(Path(args.search_results).read_text(encoding="utf-8"))
+
+        class CapturedSearchClient:
+            def __init__(self, results: list[dict[str, Any]]) -> None:
+                self.results = [SearchResult.model_validate(result) for result in results]
+
+            def search(self, query: str) -> list[SearchResult]:
+                return self.results
+
+        profile = ingest_market_profile(
+            args.home,
+            args.away,
+            CapturedSearchClient(search_results),
+            flagged_players=args.player,
+        )
+        if args.json:
+            print(profile.model_dump_json(indent=2))
+        else:
+            print(summarize_market_profile(profile))
         return 0
     if args.command == "fbref-export":
         provider = SoccerdataFBrefProvider(
@@ -529,6 +642,55 @@ def main(argv: list[str] | None = None) -> int:
             args.use_market,
         )
         print(json.dumps({"output": args.output}))
+        return 0
+    if args.command == "forecast-card":
+        from .card import forecast_card
+
+        questions = list(args.question)
+        if args.questions:
+            questions += [
+                line.strip()
+                for line in Path(args.questions).read_text(encoding="utf-8").splitlines()
+                if line.strip()
+            ]
+        if not questions:
+            parser.error("forecast-card needs --question and/or --questions")
+        lineup_status: dict[str, str] = {}
+        roles: dict[str, str] = {}
+        if args.lineup:
+            raw = json.loads(Path(args.lineup).read_text(encoding="utf-8"))
+            for name, value in raw.items():
+                if isinstance(value, dict):
+                    lineup_status[name] = value.get("status", "starter")
+                    if value.get("role"):
+                        roles[name] = value["role"]
+                else:
+                    lineup_status[name] = value
+        specs = None
+        if args.llm:
+            from .llm_parser import parse_questions
+
+            specs = parse_questions(
+                questions, home=args.home, away=args.away, model=args.model
+            )
+        rows = forecast_card(
+            args.home,
+            args.away,
+            args.lambda_home,
+            args.lambda_away,
+            questions,
+            db=database_path,
+            lineup_status=lineup_status or None,
+            roles=roles or None,
+            specs=specs,
+        )
+        if args.json:
+            print(json.dumps(rows, indent=2))
+        else:
+            for row in rows:
+                prob = row["probability"]
+                shown = f"{prob:.3f}" if prob is not None else "  -  "
+                print(f"{shown}  {row['basis']:<28} {row['question']}")
         return 0
     if args.command == "ingest-results":
         count = ingest_results_csv(database_path, args.path)

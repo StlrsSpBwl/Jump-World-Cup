@@ -171,6 +171,87 @@ def _favorite_side(g, home, away):
     return home if g["home_win"] >= g["away_win"] else away
 
 
+def _match_team(name, home, away):
+    """Resolve an LLM-provided team name to home/away (case/substring tolerant)."""
+    if not name:
+        return None
+    n = name.lower()
+    if n in home.lower() or home.lower() in n:
+        return home
+    if n in away.lower() or away.lower() in n:
+        return away
+    return None
+
+
+# fixed base rates by key (goal_before_break is computed, so excluded here)
+_FIXED_BASE = {k: v for k, v in BASE_RATES.items() if isinstance(v, (int, float))}
+
+
+def route_spec(spec, home, away, g, lam_h, lam_a, db, lineup_status, roles):
+    """Map a structured QuestionSpec (from the LLM parser) to (probability, basis)."""
+    kind = spec.kind
+    fav_win = max(g["home_win"], g["away_win"])
+    sub = _match_team(spec.subject_team, home, away)
+
+    if kind == "player_prop" and spec.event and spec.player:
+        status = "starter"
+        if lineup_status:
+            for name, st in lineup_status.items():
+                if name.lower() in spec.player.lower() or spec.player.lower() in name.lower():
+                    status = st
+                    break
+        role = (roles or {}).get(spec.player, "forward")
+        r = player_prop_probability(spec.event, role, status)
+        return r["probability"], f"player:{r['basis']}:{spec.event}"
+    if kind == "advance":
+        side = "home" if sub == home else "away"
+        return advance_probability(g["home_win"], g["draw"], g["away_win"], side), "advance"
+    if kind == "win":
+        return (g["home_win"] if sub == home else g["away_win"]), "win"
+    if kind == "draw":
+        return g["draw"], "draw"
+    if kind == "ht_lead":
+        return (g["ht_home_lead"] if sub == home else g["ht_away_lead"]), "ht_lead"
+    if kind == "btts":
+        return g["btts"], "btts"
+    if kind == "btts_and_3plus":
+        return g["btts_and_3plus"], "btts"
+    if kind == "total_under":
+        return g["under_2_5"], "under_2_5"
+    if kind == "total_over":
+        return g["three_or_more"], "three_plus"
+    if kind == "second_half_more_goals":
+        return g["second_half_more_goals"], "2h>1h"
+    if kind == "second_half_2plus":
+        return g["second_half_2plus"], "2h_2plus"
+    if kind == "team_scores_2h":
+        return (g["home_scores_2h"] if sub == home else g["away_scores_2h"]), "team_scores_2h"
+    if kind == "goal_before_break":
+        return goal_before_minute(lam_h, lam_a, 23.0), "goal_before_break"
+    if kind in ("count_threshold", "count_total", "count_compare") and db and spec.stat:
+        stat, period, k = spec.stat, spec.period, spec.threshold
+        if kind == "count_total" and k is not None:
+            ra = team_count_rate(db, home, stat, period)
+            rb = team_count_rate(db, away, stat, period)
+            if ra and rb:
+                return count_total_threshold(ra, rb, k), f"count_total:{stat}:{period}"
+        subj = sub or home
+        opp = away if subj == home else home
+        ra = team_count_rate(db, subj, stat, period)
+        rb = team_count_rate(db, opp, stat, period)
+        if kind == "count_compare" and ra and rb:
+            p = count_more_than(ra, rb)
+            if stat in ("shots_on_target", "corners"):
+                corr = "sot" if stat == "shots_on_target" else "corners"
+                p = apply_favorite_dominance(p, subj == _favorite_side(g, home, away), fav_win, corr)
+            return p, f"count_more_than:{stat}:{period}"
+        if kind == "count_threshold" and k is not None and ra:
+            return count_threshold(ra, k), f"count_threshold:{stat}:{period}"
+    if kind == "base_rate" and spec.base_rate_key in _FIXED_BASE:
+        return _FIXED_BASE[spec.base_rate_key], f"base:{spec.base_rate_key}"
+    return None, "unrouted"
+
+
 def forecast_card(
     home: str,
     away: str,
@@ -181,11 +262,23 @@ def forecast_card(
     db: str | Path | None = None,
     lineup_status: dict[str, str] | None = None,
     roles: dict[str, str] | None = None,
+    specs: list | None = None,
     rho: float = -0.08,
 ) -> list[dict]:
-    """Route every question to an engine and return [{question, probability, basis}]."""
+    """Route every question to an engine and return [{question, probability, basis}].
+
+    If `specs` (structured QuestionSpec objects from the LLM parser) are supplied,
+    route via those; otherwise fall back to the built-in rule-based parser.
+    """
     g = goal_props(lambda_home, lambda_away, rho)
     out = []
+    if specs is not None:
+        for spec in specs:
+            prob, basis = route_spec(
+                spec, home, away, g, lambda_home, lambda_away, db, lineup_status, roles
+            )
+            out.append({"question": spec.question, "probability": prob, "basis": basis})
+        return out
     for q in questions:
         prob, basis = _route(q, home, away, g, lambda_home, lambda_away, db, lineup_status, roles)
         out.append({"question": q, "probability": prob, "basis": basis})
