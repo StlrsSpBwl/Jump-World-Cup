@@ -31,14 +31,14 @@ DEFAULT_MODEL = "claude-haiku-4-5"  # cheapest fast model; user-overridable
 KINDS = [
     "player_prop", "advance", "win", "draw", "ht_lead", "btts", "btts_and_3plus",
     "total_under", "total_over", "second_half_more_goals", "second_half_2plus",
-    "team_scores_2h", "goal_before_break", "count_threshold", "count_total",
-    "count_compare", "base_rate",
+    "team_scores_2h", "team_both_halves", "team_total_goals", "goal_before_break",
+    "count_threshold", "count_total", "count_compare", "base_rate",
 ]
 EVENTS = ["goals", "shots_on_target", "goal_or_assist", "second_half_shots_on_target"]
 STATS = ["fouls", "corners", "offsides", "cards", "shots_on_target"]
 BASE_KEYS = [
     "penalty_only", "penalty_or_red", "sub_scores", "any_brace",
-    "offside_before_break", "card_after_break",
+    "offside_before_break", "card_after_break", "any_player_2plus_sot",
 ]
 
 
@@ -75,6 +75,9 @@ kind meanings:
 - second_half_more_goals: "second half has more goals than the first half".
 - second_half_2plus: "2 or more goals in the second half".
 - team_scores_2h: "will [team] score in the second half". Set subject_team.
+- team_both_halves: "will [team] score in BOTH halves". Set subject_team.
+- team_total_goals: "will [team] score N or more goals" (a named team's own goal count).
+  Set subject_team and threshold. NOT the match total (that's total_over/total_under).
 - goal_before_break: "a goal before the first hydration break".
 - count_threshold: "[team] has X+ [stat]". Set subject_team, stat, threshold, period.
 - count_total: "X+ total [stat]" (both teams combined). Set stat, threshold, period.
@@ -83,7 +86,8 @@ kind meanings:
   penalty_only (a penalty is awarded), penalty_or_red (penalty OR red card),
   sub_scores (a substitute scores), any_brace (any player scores 2+ goals),
   offside_before_break (offside before first hydration break),
-  card_after_break (a card after a hydration break).
+  card_after_break (a card after a hydration break),
+  any_player_2plus_sot (ANY player records 2+ shots on target — not a named player).
 
 stat ∈ {fouls, corners, offsides, cards, shots_on_target}.
 period ∈ {full, first_half, second_half} — default full.

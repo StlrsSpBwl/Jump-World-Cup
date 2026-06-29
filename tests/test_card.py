@@ -58,6 +58,31 @@ def test_favorite_advances_more_than_underdog():
     assert abs((can + sa) - 1.0) < 0.05  # one of them advances
 
 
+def test_team_total_goals_not_misrouted_to_brace():
+    # regression: "[team] score 2 or more goals" must be a team-goal calc, NOT base:brace
+    res = forecast_card("Brazil", "Japan", 1.65, 0.875,
+                        ["Will Brazil score 2 or more goals in regulation?",
+                         "Will any player score more than 1 goal in regulation?"],
+                        db=str(DB))
+    team = _by_q(res, "brazil score 2")
+    brace = _by_q(res, "any player score more than 1")
+    assert team["basis"] == "team_total_goals"
+    assert 0.45 < team["probability"] < 0.55   # 1 - P(0) - P(1) on lambda 1.65
+    assert brace["basis"] == "base:brace"       # any-player phrasing stays a brace
+
+
+def test_team_both_halves_and_any_player_sot_route():
+    res = forecast_card("Brazil", "Japan", 1.65, 0.875,
+                        ["Will Brazil score in both halves of regulation?",
+                         "Will any player record 2 or more shots on target in regulation?"],
+                        db=str(DB))
+    bh = _by_q(res, "both halves")
+    sot = _by_q(res, "any player record 2")
+    assert bh["basis"] == "team_both_halves" and 0.2 < bh["probability"] < 0.45
+    assert sot["basis"] == "base:any_player_2plus_sot"
+    assert all(r["probability"] is not None for r in res)
+
+
 def test_outcome_and_total_routing():
     res = forecast_card("Canada", "South Africa", 1.4, 1.0,
                         ["Will both teams score AND the match have 3 or more total goals?",
