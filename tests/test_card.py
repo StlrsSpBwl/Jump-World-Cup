@@ -108,6 +108,16 @@ def test_win_first_goal_and_there_be_phrasings_route():
     assert all(r["probability"] is not None for r in res)
 
 
+def test_team_alias_resolves_count_props():
+    # "Ivory Coast" (contest name) must resolve to the DB's "Côte d'Ivoire"
+    res = forecast_card("Norway", "Ivory Coast", 1.575, 1.175,
+                        ["Will Ivory Coast have more corner kicks than Norway in regulation?",
+                         "Will there be 4 or more total cards shown in regulation?"],
+                        db=str(DB))
+    assert all(r["probability"] is not None for r in res)
+    assert _by_q(res, "corner kicks")["basis"] == "count_more_than:corners:full"
+
+
 def test_winning_at_halftime_not_misrouted_to_win():
     res = forecast_card("Germany", "Paraguay", 2.2, 0.7,
                         ["Will Germany be ahead at halftime?"], db=str(DB))

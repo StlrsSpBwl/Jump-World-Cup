@@ -160,10 +160,30 @@ def count_total_threshold(rate_a: CountRate, rate_b: CountRate, k: int, max_n: i
     return float(conv[k:].sum())
 
 
+# Common broadcast/contest names -> the name as stored in the stats DB.
+TEAM_ALIASES = {
+    "ivory coast": "Côte d'Ivoire",
+    "cote d'ivoire": "Côte d'Ivoire",
+    "south korea": "Korea Republic",
+    "north korea": "Korea DPR",
+    "iran": "IR Iran",
+    "usa": "United States",
+    "czech republic": "Czechia",
+    "cape verde": "Cabo Verde",
+    "drc": "DR Congo",
+    "dr congo": "DR Congo",
+}
+
+
 def team_count_rate(
     db: str | Path, team: str, stat: str, period: str = "full"
 ) -> CountRate | None:
-    """Mean/var of a team's `stat` over its matches. period: full|first_half|second_half."""
+    """Mean/var of a team's `stat` over its matches. period: full|first_half|second_half.
+
+    Resolves common contest/broadcast aliases (e.g. "Ivory Coast" -> "Côte d'Ivoire")
+    to the DB's stored name before looking up.
+    """
+    team = TEAM_ALIASES.get(team.strip().lower(), team)
     con = sqlite3.connect(str(db))
     col = stat if period != "first_half" else f"first_half_{stat}"
     rows = con.execute(
