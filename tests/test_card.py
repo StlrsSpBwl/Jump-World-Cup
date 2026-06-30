@@ -114,6 +114,29 @@ def test_winning_at_halftime_not_misrouted_to_win():
     assert res[0]["basis"] == "ht_lead"
 
 
+def test_half_total_goals_not_misrouted_to_brace():
+    # "first half produce 2 or more goals" must be a half-total calc, NOT base:brace
+    res = forecast_card("Netherlands", "Morocco", 1.275, 1.05,
+                        ["Will the first half produce 2 or more goals?"], db=str(DB))
+    r = res[0]
+    assert r["basis"] == "half_total_goals"
+    assert 0.22 < r["probability"] < 0.36   # Poisson on 1H combined lambda ~1.07
+
+
+def test_redcard_bothcard_and_timing_route():
+    res = forecast_card("Netherlands", "Morocco", 1.275, 1.05,
+                        ["Will a red card be shown in the match?",
+                         "Will both teams receive at least one card in regulation?",
+                         "Will a goal be scored after the second hydration break?",
+                         "Will a goal be scored in first-half stoppage time?"],
+                        db=str(DB))
+    assert _by_q(res, "red card")["basis"] == "base:red_card"
+    assert _by_q(res, "both teams receive")["basis"] == "both_teams_card"
+    assert _by_q(res, "after the second hydration")["basis"] == "goal_after_break"
+    assert _by_q(res, "first-half stoppage")["basis"] == "base:fh_stoppage_goal"
+    assert all(r["probability"] is not None for r in res)
+
+
 def test_outcome_and_total_routing():
     res = forecast_card("Canada", "South Africa", 1.4, 1.0,
                         ["Will both teams score AND the match have 3 or more total goals?",

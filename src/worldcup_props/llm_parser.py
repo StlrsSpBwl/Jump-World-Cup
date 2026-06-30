@@ -32,7 +32,8 @@ KINDS = [
     "player_prop", "advance", "win", "draw", "ht_lead", "btts", "btts_and_3plus",
     "total_under", "total_over", "second_half_more_goals", "second_half_2plus",
     "team_scores_2h", "team_both_halves", "team_total_goals", "first_goal",
-    "goal_before_break", "count_threshold", "count_total", "count_compare", "base_rate",
+    "half_total_goals", "both_teams_card", "goal_before_break", "goal_after_break",
+    "count_threshold", "count_total", "count_compare", "base_rate",
 ]
 EVENTS = ["goals", "shots_on_target", "goal_or_assist", "second_half_shots_on_target"]
 STATS = ["fouls", "corners", "offsides", "cards", "shots_on_target"]
@@ -79,8 +80,11 @@ kind meanings:
 - team_total_goals: "will [team] score N or more goals" (a named team's own goal count).
   Set subject_team and threshold. NOT the match total (that's total_over/total_under).
 - first_goal: "will [team] score the first goal / open the scoring". Set subject_team.
+- half_total_goals: "will the [first/second] half produce N+ goals" (no team). Set period + threshold.
+- both_teams_card: "will both teams receive at least one card".
 - player_prop with threshold: "[player] has 2+ shots on target" -> set player, event, threshold=2.
 - goal_before_break: "a goal before the first hydration break".
+- goal_after_break: "a goal after the second hydration break".
 - count_threshold: "[team] has X+ [stat]". Set subject_team, stat, threshold, period.
 - count_total: "X+ total [stat]" (both teams combined). Set stat, threshold, period.
 - count_compare: "[team A] more [stat] than [team B]". Set subject_team=A, stat, period.
@@ -89,7 +93,8 @@ kind meanings:
   sub_scores (a substitute scores), any_brace (any player scores 2+ goals),
   offside_before_break (offside before first hydration break),
   card_after_break (a card after a hydration break),
-  any_player_2plus_sot (ANY player records 2+ shots on target — not a named player).
+  any_player_2plus_sot (ANY player records 2+ shots on target — not a named player),
+  red_card (a red card is shown), fh_stoppage_goal (a goal in first-half stoppage time).
 
 stat ∈ {fouls, corners, offsides, cards, shots_on_target}.
 period ∈ {full, first_half, second_half} — default full.

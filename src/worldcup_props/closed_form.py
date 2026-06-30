@@ -97,14 +97,25 @@ def goal_before_minute(
     return float(1.0 - np.exp(-total * minute / match_minutes))
 
 
+def goal_after_minute(
+    lambda_home: float, lambda_away: float, minute: float, match_minutes: float = DEFAULT_MATCH_MINUTES
+) -> float:
+    """P(at least one goal AFTER `minute`), constant-hazard approx (mirror of before)."""
+    total = lambda_home + lambda_away
+    return float(1.0 - np.exp(-total * (match_minutes - minute) / match_minutes))
+
+
 def advance_probability(home_win: float, draw: float, away_win: float, side: str,
-                        et_pen_edge: float = 0.5) -> float:
+                        et_pen_edge: float | None = None) -> float:
     """Knockout 'team advances' = win in 90 + draw * P(win the ET/shootout).
 
-    et_pen_edge is the team's share of the tied-game tiebreak; default 0.5 (coin
-    flip), nudge toward the stronger side if desired.
+    et_pen_edge is the team's share of the tied-game tiebreak. Default: the
+    team's relative win strength, so the favorite carries ET/penalties too.
     """
     win = home_win if side == "home" else away_win
+    other = away_win if side == "home" else home_win
+    if et_pen_edge is None:
+        et_pen_edge = win / (win + other) if (win + other) > 0 else 0.5
     return float(win + draw * et_pen_edge)
 
 

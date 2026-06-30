@@ -25,6 +25,7 @@ from .closed_form import (
     count_more_than,
     count_threshold,
     count_total_threshold,
+    goal_after_minute,
     goal_before_minute,
     goal_props,
     half_split_lambdas,
@@ -46,6 +47,8 @@ BASE_RATES = {
     "offside_before_break": 0.52,
     "card_after_break": 0.63,
     "any_player_2plus_sot": 0.85,  # ~10 SOT across few shooters -> very likely someone gets 2+
+    "red_card": 0.22,              # a red card shown (knockout base rate)
+    "fh_stoppage_goal": 0.11,      # a goal in first-half stoppage time (~3' window, late-half tilt)
     "goal_before_break": None,  # computed from lambda
 }
 
@@ -69,6 +72,22 @@ def _team_scores_first(lam_h, lam_a, subject_is_home):
         return 0.0
     share = (lam_h if subject_is_home else lam_a) / total
     return float(share * (1.0 - math.exp(-total)))
+
+
+def _half_total_goals(lam_h, lam_a, first_half: bool, k: int):
+    """P(a given half produces >= k goals), Poisson on that half's combined lambda."""
+    l1h, l1a, l2h, l2a = half_split_lambdas(lam_h, lam_a)
+    lam = (l1h + l1a) if first_half else (l2h + l2a)
+    return float(1.0 - poisson.cdf(k - 1, lam))
+
+
+def _both_teams_card(db, home, away, period="full"):
+    """P(both teams receive >= 1 card) = P(home>=1) * P(away>=1) from card rates."""
+    rh = team_count_rate(db, home, "cards", period) if db else None
+    ra = team_count_rate(db, away, "cards", period) if db else None
+    if not rh or not ra:
+        return None
+    return float(count_threshold(rh, 1) * count_threshold(ra, 1))
 
 
 def _num_threshold(q: str) -> int | None:
@@ -136,6 +155,10 @@ def _route(q, home, away, g, lam_h, lam_a, db, lineup_status, roles):
         return (g["ht_draw"] if "halftime" in ql else g["draw"]), "draw"
 
     # --- totals / BTTS / goals timing ---
+    if "both teams" in ql and "card" in ql:  # both teams >=1 card (guard before btts)
+        p = _both_teams_card(db, home, away)
+        if p is not None:
+            return p, "both_teams_card"
     if "both teams score" in ql:
         return (g["btts_and_3plus"] if "3 or more" in ql or "3+" in ql else g["btts"]), "btts"
     if "2 or fewer total goals" in ql:
@@ -144,6 +167,10 @@ def _route(q, home, away, g, lam_h, lam_a, db, lineup_status, roles):
         return g["three_or_more"], "three_plus"
     if "second half" in ql and "more" in ql and "first half" in ql:
         return g["second_half_more_goals"], "2h>1h"
+    # half-total goals: "[first/second] half produce N+ goals" (no team) — before the brace rule
+    m_hh = re.search(r"(\d+)\s*or more goals", ql)
+    if m_hh and ("first half" in ql or "second half" in ql) and not _subject_team(q, home, away):
+        return _half_total_goals(lam_h, lam_a, "first half" in ql, int(m_hh.group(1))), "half_total_goals"
     if "second half" in ql and ("2 or more" in ql and "goal" in ql):
         return g["second_half_2plus"], "2h_2plus"
     if "score in the second half" in ql or "score in the 2nd half" in ql:
@@ -151,6 +178,10 @@ def _route(q, home, away, g, lam_h, lam_a, db, lineup_status, roles):
         return (g["home_scores_2h"] if sub == home else g["away_scores_2h"]), "team_scores_2h"
     if "goal" in ql and "before the first hydration" in ql:
         return goal_before_minute(lam_h, lam_a, 23.0), "goal_before_break"
+    if "goal" in ql and "after the second hydration" in ql:
+        return goal_after_minute(lam_h, lam_a, 67.0), "goal_after_break"
+    if "goal" in ql and ("first-half stoppage" in ql or "first half stoppage" in ql):
+        return BASE_RATES["fh_stoppage_goal"], "base:fh_stoppage_goal"
 
     # --- team-level goal props (MUST precede the any-player brace fallback) ---
     if "both halves" in ql and "score" in ql:
@@ -205,6 +236,8 @@ def _route(q, home, away, g, lam_h, lam_a, db, lineup_status, roles):
         return BASE_RATES["penalty_or_red"], "base:penalty_or_red"
     if "penalty" in ql:
         return BASE_RATES["penalty_only"], "base:penalty"
+    if "red card" in ql:
+        return BASE_RATES["red_card"], "base:red_card"
     if "substitute score" in ql or "a sub" in ql:
         return BASE_RATES["sub_scores"], "base:sub_scores"
     if ("shot on target" in ql or "shots on target" in ql) and _num_threshold(q) and _num_threshold(q) >= 2:
@@ -286,6 +319,14 @@ def route_spec(spec, home, away, g, lam_h, lam_a, db, lineup_status, roles):
         return _team_both_halves(lam_h, lam_a, sub == home), "team_both_halves"
     if kind == "first_goal":
         return _team_scores_first(lam_h, lam_a, sub == home), "team_scores_first"
+    if kind == "half_total_goals" and spec.threshold:
+        return _half_total_goals(lam_h, lam_a, spec.period == "first_half", spec.threshold), "half_total_goals"
+    if kind == "goal_after_break":
+        return goal_after_minute(lam_h, lam_a, 67.0), "goal_after_break"
+    if kind == "both_teams_card":
+        p = _both_teams_card(db, home, away)
+        if p is not None:
+            return p, "both_teams_card"
     if kind in ("count_threshold", "count_total", "count_compare") and db and spec.stat:
         stat, period, k = spec.stat, spec.period, spec.threshold
         if kind == "count_total" and k is not None:
