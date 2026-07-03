@@ -81,10 +81,36 @@ def _half_total_goals(lam_h, lam_a, first_half: bool, k: int):
     return float(1.0 - poisson.cdf(k - 1, lam))
 
 
-def _both_teams_card(db, home, away, period="full"):
+# Stats the current-tournament (Footiqo) source covers; offsides/fouls fall back to DB.
+_FOOTIQO_STATS = {"shots_on_target", "corners", "cards", "shots"}
+
+
+def _team_cr(footiqo, db, team, stat, period):
+    """Team count rate: shrunk current-tournament (Footiqo) when available, else stale DB."""
+    if footiqo is not None and stat in _FOOTIQO_STATS and period == "full":
+        cr = footiqo.team_rate(team, stat)
+        if cr is not None:
+            return cr
+    return team_count_rate(db, team, stat, period) if db else None
+
+
+def _total_prob(footiqo, db, stat, k, home, away, period):
+    """P(total stat >= k): Footiqo empirical distribution (banked, n≈85) if available, else DB."""
+    if footiqo is not None and stat in _FOOTIQO_STATS and period == "full":
+        p = footiqo.total_rate(stat, k)
+        if p is not None:
+            return p, f"footiqo_total:{stat}"
+    ra = team_count_rate(db, home, stat, period) if db else None
+    rb = team_count_rate(db, away, stat, period) if db else None
+    if ra and rb:
+        return count_total_threshold(ra, rb, k), f"count_total:{stat}:{period}"
+    return None, None
+
+
+def _both_teams_card(footiqo, db, home, away, period="full"):
     """P(both teams receive >= 1 card) = P(home>=1) * P(away>=1) from card rates."""
-    rh = team_count_rate(db, home, "cards", period) if db else None
-    ra = team_count_rate(db, away, "cards", period) if db else None
+    rh = _team_cr(footiqo, db, home, "cards", period)
+    ra = _team_cr(footiqo, db, away, "cards", period)
     if not rh or not ra:
         return None
     return float(count_threshold(rh, 1) * count_threshold(ra, 1))
@@ -101,8 +127,13 @@ def _num_threshold(q: str) -> int | None:
 
 
 def _stat(q: str) -> str | None:
+    ql = q.lower()
+    if "shot on target" in ql or "shots on target" in ql:
+        return "shots_on_target"
+    if "shot" in ql:  # "total shots (on and off target)" — after the SOT check
+        return "shots"
     for word, stat in STAT_WORDS.items():
-        if word in q:
+        if word in ql:
             return stat
     return None
 
@@ -128,7 +159,7 @@ def _subject_team(q: str, home: str, away: str) -> str | None:
     return home if ih < ia else away
 
 
-def _route(q, home, away, g, lam_h, lam_a, db, lineup_status, roles):
+def _route(q, home, away, g, lam_h, lam_a, db, lineup_status, roles, footiqo=None):
     ql = q.lower()
     fav_win = max(g["home_win"], g["away_win"])
 
@@ -156,7 +187,7 @@ def _route(q, home, away, g, lam_h, lam_a, db, lineup_status, roles):
 
     # --- totals / BTTS / goals timing ---
     if "both teams" in ql and "card" in ql:  # both teams >=1 card (guard before btts)
-        p = _both_teams_card(db, home, away)
+        p = _both_teams_card(footiqo, db, home, away)
         if p is not None:
             return p, "both_teams_card"
     if "both teams score" in ql:
@@ -205,22 +236,21 @@ def _route(q, home, away, g, lam_h, lam_a, db, lineup_status, roles):
     # --- count props ---
     stat = _stat(q)
     period = _period(q)
-    if stat and db:
+    if stat and (db or footiqo):
         k = _num_threshold(q)
         # match-total stat: "X+ total <stat>" OR "will there be X+ <stat>" (no team, no player)
         is_match_total = "total" in ql or (
             ("there be" in ql or "there are" in ql) and "player" not in ql
         )
         if is_match_total and k is not None:
-            ra = team_count_rate(db, home, stat, period)
-            rb = team_count_rate(db, away, stat, period)
-            if ra and rb:
-                return count_total_threshold(ra, rb, k), f"count_total:{stat}:{period}"
+            p, basis = _total_prob(footiqo, db, stat, k, home, away, period)
+            if p is not None:
+                return p, basis
         sub = _subject_team(q, home, away)
         if sub:
             opp = away if sub == home else home
-            ra = team_count_rate(db, sub, stat, period)
-            rb = team_count_rate(db, opp, stat, period)
+            ra = _team_cr(footiqo, db, sub, stat, period)
+            rb = _team_cr(footiqo, db, opp, stat, period)
             if "more" in ql and "than" in ql and ra and rb:  # comparison
                 p = count_more_than(ra, rb)
                 # validated favorite corrections: SOT/corners, subject = favorite only
@@ -271,7 +301,7 @@ def _match_team(name, home, away):
 _FIXED_BASE = {k: v for k, v in BASE_RATES.items() if isinstance(v, (int, float))}
 
 
-def route_spec(spec, home, away, g, lam_h, lam_a, db, lineup_status, roles):
+def route_spec(spec, home, away, g, lam_h, lam_a, db, lineup_status, roles, footiqo=None):
     """Map a structured QuestionSpec (from the LLM parser) to (probability, basis)."""
     kind = spec.kind
     fav_win = max(g["home_win"], g["away_win"])
@@ -324,20 +354,19 @@ def route_spec(spec, home, away, g, lam_h, lam_a, db, lineup_status, roles):
     if kind == "goal_after_break":
         return goal_after_minute(lam_h, lam_a, 67.0), "goal_after_break"
     if kind == "both_teams_card":
-        p = _both_teams_card(db, home, away)
+        p = _both_teams_card(footiqo, db, home, away)
         if p is not None:
             return p, "both_teams_card"
-    if kind in ("count_threshold", "count_total", "count_compare") and db and spec.stat:
+    if kind in ("count_threshold", "count_total", "count_compare") and (db or footiqo) and spec.stat:
         stat, period, k = spec.stat, spec.period, spec.threshold
         if kind == "count_total" and k is not None:
-            ra = team_count_rate(db, home, stat, period)
-            rb = team_count_rate(db, away, stat, period)
-            if ra and rb:
-                return count_total_threshold(ra, rb, k), f"count_total:{stat}:{period}"
+            p, basis = _total_prob(footiqo, db, stat, k, home, away, period)
+            if p is not None:
+                return p, basis
         subj = sub or home
         opp = away if subj == home else home
-        ra = team_count_rate(db, subj, stat, period)
-        rb = team_count_rate(db, opp, stat, period)
+        ra = _team_cr(footiqo, db, subj, stat, period)
+        rb = _team_cr(footiqo, db, opp, stat, period)
         if kind == "count_compare" and ra and rb:
             p = count_more_than(ra, rb)
             if stat in ("shots_on_target", "corners"):
@@ -362,23 +391,26 @@ def forecast_card(
     lineup_status: dict[str, str] | None = None,
     roles: dict[str, str] | None = None,
     specs: list | None = None,
+    footiqo=None,
     rho: float = -0.08,
 ) -> list[dict]:
     """Route every question to an engine and return [{question, probability, basis}].
 
     If `specs` (structured QuestionSpec objects from the LLM parser) are supplied,
     route via those; otherwise fall back to the built-in rule-based parser.
+    `footiqo` (a Footiqo instance) sources structural count props from the current
+    tournament instead of the stale DB; None keeps the DB path.
     """
     g = goal_props(lambda_home, lambda_away, rho)
     out = []
     if specs is not None:
         for spec in specs:
             prob, basis = route_spec(
-                spec, home, away, g, lambda_home, lambda_away, db, lineup_status, roles
+                spec, home, away, g, lambda_home, lambda_away, db, lineup_status, roles, footiqo
             )
             out.append({"question": spec.question, "probability": prob, "basis": basis})
         return out
     for q in questions:
-        prob, basis = _route(q, home, away, g, lambda_home, lambda_away, db, lineup_status, roles)
+        prob, basis = _route(q, home, away, g, lambda_home, lambda_away, db, lineup_status, roles, footiqo)
         out.append({"question": q, "probability": prob, "basis": basis})
     return out
