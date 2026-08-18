@@ -1,0 +1,11 @@
+match,market,selection,decimal_odds,book,timestamp,line,source,definition
+Croatia vs Panama,h2h,Croatia,1.4545,fanduel,2026-06-23T20:00:00Z,,web,CRO -220
+Croatia vs Panama,h2h,Draw,4.5,fanduel,2026-06-23T20:00:00Z,,web,Draw +350
+Croatia vs Panama,h2h,Panama,7.0,fanduel,2026-06-23T20:00:00Z,,web,PAN +600
+Croatia vs Panama,totals,Over,1.676,fanduel,2026-06-23T20:00:00Z,2.5,web,O2.5 -148
+Croatia vs Panama,totals,Under,2.30,fanduel,2026-06-23T20:00:00Z,2.5,web,U2.5
+Panama vs Croatia,h2h,Panama,7.0,fanduel,2026-06-23T20:00:00Z,,web,PAN +600
+Panama vs Croatia,h2h,Draw,4.5,fanduel,2026-06-23T20:00:00Z,,web,Draw +350
+Panama vs Croatia,h2h,Croatia,1.4545,fanduel,2026-06-23T20:00:00Z,,web,CRO -220
+Panama vs Croatia,totals,Over,1.676,fanduel,2026-06-23T20:00:00Z,2.5,web,O2.5 -148
+Panama vs Croatia,totals,Under,2.30,fanduel,2026-06-23T20:00:00Z,2.5,web,U2.5

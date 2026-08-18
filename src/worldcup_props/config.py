@@ -100,6 +100,33 @@ class Settings:
         }
     )
     contest_agent_market_disagreement_trigger: float = 0.08
+    contest_agent_require_player_market_events: list[str] = field(
+        default_factory=lambda: [
+            "goals",
+            "goal_or_assist",
+            "shots_on_target",
+            "second_half_shots_on_target",
+        ]
+    )
+    contest_agent_high_usage_bench_floor: dict[str, float] = field(
+        default_factory=lambda: {
+            "goals": 0.14,
+            "goal_or_assist": 0.22,
+            "shots_on_target": 0.18,
+            "second_half_shots_on_target": 0.10,
+        }
+    )
+    contest_agent_high_usage_shots_per90: float = 1.50
+    contest_agent_high_usage_goal_assist_per90: float = 0.30
+    contest_agent_high_usage_set_piece_role: float = 0.35
+    # Favorites dominate 2nd-half SOT far more than the flat simulator predicts.
+    # Empirical P(favorite more 2H SOT) over 2,408 historical team-matches:
+    # ~even 0.56, clear favorite 0.62, strong favorite 0.79. Backtestable toggle.
+    contest_agent_favorite_sot2h_dominance: bool = True
+    contest_agent_favorite_sot2h_weight: float = 0.55
+    # Apply the contest-agent submission layer inside the backtest so its
+    # corrections can be gated on held-out Brier (off keeps pure model ablation).
+    backtest_apply_contest_agent: bool = False
     use_coverage_safeguards: bool = True
     coverage_probability_prior_matches: float = 12.0
     market_coverage_ess_credit: float = 6.0

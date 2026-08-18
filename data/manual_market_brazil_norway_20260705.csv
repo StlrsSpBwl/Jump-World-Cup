@@ -1,0 +1,11 @@
+match,market,selection,decimal_odds,book,timestamp,line,source,definition
+Brazil vs Norway,h2h,Brazil,1.7692,draftkings,2026-07-05T00:00:00Z,,web,ML -130
+Brazil vs Norway,h2h,Draw,3.75,draftkings,2026-07-05T00:00:00Z,,web,ML +275
+Brazil vs Norway,h2h,Norway,4.50,draftkings,2026-07-05T00:00:00Z,,web,ML +350
+Brazil vs Norway,totals,Over,1.6667,draftkings,2026-07-05T00:00:00Z,2.5,web,O2.5 -150
+Brazil vs Norway,totals,Under,1.80,draftkings,2026-07-05T00:00:00Z,2.5,web,U2.5 -125
+Norway vs Brazil,h2h,Brazil,1.7692,draftkings,2026-07-05T00:00:00Z,,web,ML -130
+Norway vs Brazil,h2h,Draw,3.75,draftkings,2026-07-05T00:00:00Z,,web,ML +275
+Norway vs Brazil,h2h,Norway,4.50,draftkings,2026-07-05T00:00:00Z,,web,ML +350
+Norway vs Brazil,totals,Over,1.6667,draftkings,2026-07-05T00:00:00Z,2.5,web,O2.5 -150
+Norway vs Brazil,totals,Under,1.80,draftkings,2026-07-05T00:00:00Z,2.5,web,U2.5 -125

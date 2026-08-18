@@ -1,0 +1,2 @@
+[console_scripts]
+worldcup-props = worldcup_props.cli:main

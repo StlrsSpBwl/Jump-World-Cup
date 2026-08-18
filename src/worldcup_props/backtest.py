@@ -10,6 +10,7 @@ from typing import Any
 import numpy as np
 from scipy.stats import nbinom
 
+from .contest_agent import apply_question_agent
 from .calibration import (
     apply_calibration_map,
     apply_shrinkage,
@@ -436,7 +437,9 @@ def _load_holdout_matches(
                a.shots_on_target AS away_shots_on_target,
                h.cards AS home_cards, a.cards AS away_cards,
                h.first_half_corners AS home_first_half_corners,
-               a.first_half_corners AS away_first_half_corners
+               a.first_half_corners AS away_first_half_corners,
+               h.first_half_shots_on_target AS home_first_half_shots_on_target,
+               a.first_half_shots_on_target AS away_first_half_shots_on_target
         FROM matches m
         JOIN team_match_stats h ON h.match_id=m.id AND h.is_home=1
         JOIN team_match_stats a ON a.match_id=m.id AND a.is_home=0
@@ -517,6 +520,28 @@ def _evaluate_matches(
                     simulations,
                 )
             )
+        home_sot = match["home_shots_on_target"]
+        away_sot = match["away_shots_on_target"]
+        home_sot_h = match["home_first_half_shots_on_target"]
+        away_sot_h = match["away_first_half_shots_on_target"]
+        if None not in (home_sot, away_sot, home_sot_h, away_sot_h):
+            home_second = home_sot - home_sot_h
+            away_second = away_sot - away_sot_h
+            question = _question(
+                match, Stat.SHOTS_ON_TARGET, QuestionType.SECOND_HALF_MORE_THAN
+            )
+            events.append(
+                _event(
+                    tournament,
+                    match,
+                    question,
+                    int(home_second > away_second),
+                    artifact,
+                    database_path,
+                    settings,
+                    simulations,
+                )
+            )
     return events
 
 
@@ -577,6 +602,16 @@ def _event(
         probability = baseline_average + ess_weight * (
             probability - baseline_average
         )
+    if settings.backtest_apply_contest_agent:
+        probability = apply_question_agent(
+            probability,
+            question,
+            settings,
+            goal_calibration=goal_calibration,
+            tournament_context=None,
+            market_probability=market_probability,
+            crowd_anchor=None,
+        ).probability
     return BacktestEvent(
         tournament=tournament,
         match_id=int(match["id"]),

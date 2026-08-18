@@ -1,0 +1,25 @@
+match,team,player_name,status,start_probability,expected_start_minutes,sub_probability,expected_sub_minutes,confirmed,timestamp
+Portugal vs Uzbekistan,Portugal,Diogo Costa,starter,1.0,90,0.0,0,1,2026-06-23T03:00:00Z
+Portugal vs Uzbekistan,Portugal,Rúben Dias,starter,1.0,90,0.0,0,1,2026-06-23T03:00:00Z
+Portugal vs Uzbekistan,Portugal,Cristiano Ronaldo,starter,1.0,80,0.0,0,1,2026-06-23T03:00:00Z
+Portugal vs Uzbekistan,Portugal,Bruno Fernandes,starter,1.0,80,0.0,0,1,2026-06-23T03:00:00Z
+Portugal vs Uzbekistan,Portugal,João Félix,starter,1.0,75,0.0,0,1,2026-06-23T03:00:00Z
+Portugal vs Uzbekistan,Portugal,Renato Veiga,starter,1.0,90,0.0,0,1,2026-06-23T03:00:00Z
+Portugal vs Uzbekistan,Portugal,João Neves,starter,1.0,85,0.0,0,1,2026-06-23T03:00:00Z
+Portugal vs Uzbekistan,Portugal,Pedro Neto,starter,1.0,75,0.0,0,1,2026-06-23T03:00:00Z
+Portugal vs Uzbekistan,Portugal,João Cancelo,starter,1.0,90,0.0,0,1,2026-06-23T03:00:00Z
+Portugal vs Uzbekistan,Portugal,Vitinha,starter,1.0,85,0.0,0,1,2026-06-23T03:00:00Z
+Portugal vs Uzbekistan,Portugal,Nuno Mendes,starter,1.0,90,0.0,0,1,2026-06-23T03:00:00Z
+Portugal vs Uzbekistan,Portugal,Gonçalo Ramos,sub,0.0,0,0.55,25,1,2026-06-23T03:00:00Z
+Portugal vs Uzbekistan,Portugal,Rafael Leão,sub,0.0,0,0.55,25,1,2026-06-23T03:00:00Z
+Portugal vs Uzbekistan,Uzbekistan,Abduvokhid Nematov,starter,1.0,90,0.0,0,1,2026-06-23T03:00:00Z
+Portugal vs Uzbekistan,Uzbekistan,Abdukodir Khusanov,starter,1.0,90,0.0,0,1,2026-06-23T03:00:00Z
+Portugal vs Uzbekistan,Uzbekistan,Rustam Ashurmatov,starter,1.0,90,0.0,0,1,2026-06-23T03:00:00Z
+Portugal vs Uzbekistan,Uzbekistan,Otabek Shukurov,starter,1.0,85,0.0,0,1,2026-06-23T03:00:00Z
+Portugal vs Uzbekistan,Uzbekistan,Odiljon Khamrobekov,starter,1.0,80,0.0,0,1,2026-06-23T03:00:00Z
+Portugal vs Uzbekistan,Uzbekistan,Sherzod Nasrullaev,starter,1.0,75,0.0,0,1,2026-06-23T03:00:00Z
+Portugal vs Uzbekistan,Uzbekistan,Eldor Shomurodov,starter,1.0,90,0.0,0,1,2026-06-23T03:00:00Z
+Portugal vs Uzbekistan,Uzbekistan,Abdulla Abdullaev,starter,1.0,80,0.0,0,1,2026-06-23T03:00:00Z
+Portugal vs Uzbekistan,Uzbekistan,Aziz G'aniev,starter,1.0,85,0.0,0,1,2026-06-23T03:00:00Z
+Portugal vs Uzbekistan,Uzbekistan,Abbosbek Fayzullaev,starter,1.0,85,0.0,0,1,2026-06-23T03:00:00Z
+Portugal vs Uzbekistan,Uzbekistan,Bekhruz Karimov,starter,1.0,75,0.0,0,1,2026-06-23T03:00:00Z

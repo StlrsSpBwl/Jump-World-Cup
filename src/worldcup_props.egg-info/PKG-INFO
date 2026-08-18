@@ -1,3 +1,29 @@
+Metadata-Version: 2.4
+Name: worldcup-props
+Version: 0.1.0
+Summary: Calibrated probability forecasts for international football match-stat props
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: beautifulsoup4>=4.12
+Requires-Dist: numpy>=1.26
+Requires-Dist: pandas>=2.1
+Requires-Dist: requests>=2.31
+Requires-Dist: scipy>=1.11
+Requires-Dist: streamlit>=1.58
+Requires-Dist: plotly>=5.24
+Requires-Dist: pdfplumber>=0.11
+Requires-Dist: PyMuPDF>=1.24
+Requires-Dist: rapidfuzz>=3.10
+Requires-Dist: pydantic>=2.9
+Requires-Dist: PyYAML>=6.0
+Requires-Dist: kaleido>=0.2.1
+Requires-Dist: plyer>=2.1
+Provides-Extra: soccerdata
+Requires-Dist: soccerdata>=1.8; extra == "soccerdata"
+Provides-Extra: dev
+Requires-Dist: pytest>=8.0; extra == "dev"
+Requires-Dist: ruff>=0.5; extra == "dev"
+
 # World Cup Prop Probability Forecaster
 
 ## RBP Lab Performance Dashboard
@@ -182,22 +208,6 @@ worldcup-props --config config.json ingest-csv path/to/matches.csv
 ```
 
 Imports are idempotent on `(source, source_match_id)`.
-
-### World Cup 2026 Live Dataset
-
-For the active tournament workflow, ingest the community-maintained
-`mominullptr/FIFA-World-Cup-2026-Dataset` checkout directly:
-
-```bash
-worldcup-props --config config.json ingest-fifa-world-cup-dataset \
-  /path/to/FIFA-World-Cup-2026-Dataset
-worldcup-props --config config.json train
-```
-
-This imports completed match stats, referees, and current group context into
-the same tables used by prediction. Cards are derived from `match_events.csv`,
-and future-match `tournament_context` rows are generated from the live group
-table so `must_win` and `coast_if_leading` flags are available to the simulator.
 
 ### StatsHub (Primary)
 
@@ -593,38 +603,6 @@ Optional `line` and `definition` columns are supported. Raw implied and
 de-vigged probabilities are persisted. Two-way markets default to Shin,
 while 1X2 uses proportional normalization. Aggregation uses Pinnacle when
 present and otherwise the median fair probability across books.
-
-### Market-First Agent Preflight
-
-For contest cards, run the market preflight before trusting any forecast table.
-The agent/search layer should capture one JSON list of search results from the
-full query ladder: 1X2, total goals, team totals, corners, shots-on-target,
-cards, and flagged player scorer props. Convert that captured evidence into an
-auditable profile:
-
-```bash
-worldcup-props --config config.json market-profile \
-  --home Norway --away Senegal \
-  --search-results artifacts/market_search_norway_senegal.json \
-  --player "Sadio Mané"
-```
-
-The output prints every priced line, its de-vigged probabilities, source tier,
-derived lambdas, reconciliation warnings, and an explicit `UNPRICED:` block.
-If a market appears in `UNPRICED`, downstream forecasts must treat that prop as
-model/crowd-proxy only. In particular, player shots-on-target markets must not
-be misread as team shots-on-target markets.
-
-The contest-agent workflow is now ordered as:
-
-1. Parse confirmed lineups and bench/out traps.
-2. Anchor liquid markets and team totals first.
-3. Reconcile lambdas against team totals where available.
-4. Use the simulator as a consistency engine.
-5. For unpriced soft props such as SOT thresholds, corner thresholds, foul
-   comparisons, and SOT/corner comparisons, shrink toward configured
-   contest/crowd proxy bands rather than emitting a confident raw model number.
-6. Print the applied guardrails in `--explain` under `contest_agent.rules`.
 
 Before each simulation, 1X2, totals, and Asian-handicap probabilities are fit
 to a Dixon-Coles score matrix by weighted least squares. The resulting

@@ -11,3 +11,7 @@ config.json
 rbp.db
 rbp.db-*
 data/ocr_cache/
+
+# Raw odds captures (large, machine-specific)
+*.har
+data/market_samples/

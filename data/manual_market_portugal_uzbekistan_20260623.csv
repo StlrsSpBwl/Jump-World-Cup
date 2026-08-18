@@ -1,0 +1,6 @@
+match,market,selection,decimal_odds,book,timestamp,line,source,definition
+Portugal vs Uzbekistan,h2h,Portugal,1.1905,draftkings,2026-06-23T03:00:00Z,,web_oddsshark,DK moneyline -525
+Portugal vs Uzbekistan,h2h,Draw,7.0,draftkings,2026-06-23T03:00:00Z,,web_oddsshark,DK moneyline +600
+Portugal vs Uzbekistan,h2h,Uzbekistan,16.0,draftkings,2026-06-23T03:00:00Z,,web_oddsshark,DK moneyline +1500
+Portugal vs Uzbekistan,totals,Over,1.588,draftkings,2026-06-23T03:00:00Z,2.5,web_oddsshark,DK total goals over 2.5 -170
+Portugal vs Uzbekistan,totals,Under,2.35,draftkings,2026-06-23T03:00:00Z,2.5,web_oddsshark,DK total goals under 2.5 +135

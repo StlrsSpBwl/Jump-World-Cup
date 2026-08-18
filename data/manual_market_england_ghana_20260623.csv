@@ -1,0 +1,11 @@
+match,market,selection,decimal_odds,book,timestamp,line,source,definition
+England vs Ghana,h2h,England,1.1818,fanduel,2026-06-23T19:00:00Z,,web,ML -550
+England vs Ghana,h2h,Draw,6.5,fanduel,2026-06-23T19:00:00Z,,web,ML +550
+England vs Ghana,h2h,Ghana,15.0,fanduel,2026-06-23T19:00:00Z,,web,ML +1400
+England vs Ghana,totals,Over,1.649,fanduel,2026-06-23T19:00:00Z,2.5,web,O2.5 -154
+England vs Ghana,totals,Under,2.26,fanduel,2026-06-23T19:00:00Z,2.5,web,U2.5 +126
+Ghana vs England,h2h,England,1.1818,fanduel,2026-06-23T19:00:00Z,,web,ML -550
+Ghana vs England,h2h,Draw,6.5,fanduel,2026-06-23T19:00:00Z,,web,ML +550
+Ghana vs England,h2h,Ghana,15.0,fanduel,2026-06-23T19:00:00Z,,web,ML +1400
+Ghana vs England,totals,Over,1.649,fanduel,2026-06-23T19:00:00Z,2.5,web,O2.5 -154
+Ghana vs England,totals,Under,2.26,fanduel,2026-06-23T19:00:00Z,2.5,web,U2.5 +126

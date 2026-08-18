@@ -92,11 +92,12 @@
   },
   "shots_on_target": {
     "market_type": "player_shots_on_target",
-    "definition_match": false,
+    "line": 0.5,
+    "definition_match": true,
     "tie_resolves_as": "not_applicable",
     "includes_extra_time": false,
     "stat_provider": "verify_opta",
-    "notes": "Provider definitions differ for blocked shots and keeper touches."
+    "notes": "Use only for player over 0.5 shots-on-target markets that settle as 1+ official SOT."
   },
   "offsides": {
     "market_type": "offsides",

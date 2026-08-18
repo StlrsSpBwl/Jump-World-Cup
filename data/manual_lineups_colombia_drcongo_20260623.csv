@@ -1,0 +1,6 @@
+match,team,player_name,status,start_probability,expected_start_minutes,sub_probability,expected_sub_minutes,confirmed,timestamp
+Colombia vs DR Congo,Colombia,Luis Diaz,starter,1.0,85,0.0,0,1,2026-06-23T22:00:00Z
+Colombia vs DR Congo,Colombia,James Rodriguez,starter,1.0,80,0.0,0,1,2026-06-23T22:00:00Z
+Colombia vs DR Congo,Colombia,Luis Suarez,starter,1.0,80,0.0,0,1,2026-06-23T22:00:00Z
+Colombia vs DR Congo,DR Congo,Cedric Bakambu,starter,1.0,80,0.0,0,1,2026-06-23T22:00:00Z
+Colombia vs DR Congo,DR Congo,Yoane Wissa,starter,1.0,80,0.0,0,1,2026-06-23T22:00:00Z

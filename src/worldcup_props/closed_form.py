@@ -41,6 +41,21 @@ def _p_poisson_greater(mu_a: float, mu_b: float, max_n: int = 30) -> float:
     return float(np.sum(pa * cdf_b_below))
 
 
+def _p_poisson_equal(mu_a: float, mu_b: float, max_n: int = 30) -> float:
+    """P(A == B) for independent A~Poisson(mu_a), B~Poisson(mu_b)."""
+    a = np.arange(max_n + 1)
+    return float(np.sum(poisson.pmf(a, mu_a) * poisson.pmf(a, mu_b)))
+
+
+def race_probability(rate_a: float, rate_b: float) -> float:
+    """P(event A happens before event B), modeling both as independent constant-hazard
+    (exponential) processes over the match -- a closed-form 'which fires first' race."""
+    total = rate_a + rate_b
+    if total <= 0:
+        return 0.5
+    return float(rate_a / total)
+
+
 def half_split_lambdas(lh: float, la: float, first_half_share: float = DEFAULT_FIRST_HALF_SHARE):
     s1 = first_half_share
     s2 = 1.0 - s1
@@ -81,6 +96,7 @@ def goal_props(
         "ht_draw": ht["draw"],
         "ht_away_lead": ht["away"],
         "second_half_more_goals": _p_poisson_greater(tot_2h, l1h + l1a),
+        "equal_half_goals": _p_poisson_equal(l1h + l1a, tot_2h),
         "second_half_2plus": float(1.0 - poisson.cdf(1, tot_2h)),
         "home_scores_2h": 1.0 - float(np.exp(-l2h)),
         "away_scores_2h": 1.0 - float(np.exp(-l2a)),
@@ -153,11 +169,16 @@ def count_more_than(rate_a: CountRate, rate_b: CountRate, max_n: int = 40) -> fl
     return float(np.sum(pa * cb_below))
 
 
-def count_total_threshold(rate_a: CountRate, rate_b: CountRate, k: int, max_n: int = 60) -> float:
-    """P(A + B >= k) via pmf convolution."""
+def count_total_pmf(rate_a: CountRate, rate_b: CountRate, max_n: int = 60) -> np.ndarray:
+    """PMF of A+B (independent counts) via convolution, truncated to `max_n`."""
     support = np.arange(max_n + 1)
     conv = np.convolve(_count_pmf(rate_a, support), _count_pmf(rate_b, support))
-    return float(conv[k:].sum())
+    return conv[: max_n + 1]
+
+
+def count_total_threshold(rate_a: CountRate, rate_b: CountRate, k: int, max_n: int = 60) -> float:
+    """P(A + B >= k) via pmf convolution."""
+    return float(count_total_pmf(rate_a, rate_b, max_n)[k:].sum())
 
 
 # Common broadcast/contest names -> the name as stored in the stats DB.
@@ -204,6 +225,61 @@ def team_count_rate(
         return None
     arr = np.array(vals)
     return CountRate(mean=float(arr.mean()), var=float(arr.var(ddof=1)))
+
+
+# --------------------------------------------------- opponent-defense adjustment
+# Held-out validated (tools/holdout_validation_opponent_defense.py, 1,204 matches):
+# blending a team's own historical rate with the specific opponent's *allowed*
+# rate (attack * allowed / league_avg, Poisson-style) lowers threshold-prop
+# Brier for shots_on_target (weight 0.5, all 20 seeds negative) and corners
+# (weight 0.25, 19/20 seeds negative). NOT validated for cards (mean delta
+# ~0, sign flips across seeds) -- fouls/cards aren't a strength signal, same
+# finding as the favorite-dominance work; do not extend there.
+OPPONENT_ADJUSTMENT_WEIGHT = {"shots_on_target": 0.5, "corners": 0.25}
+
+
+def _league_average(db: str | Path, stat: str) -> float | None:
+    con = sqlite3.connect(str(db))
+    rows = con.execute(f"SELECT {stat} FROM team_match_stats WHERE {stat} IS NOT NULL").fetchall()
+    vals = [float(v) for (v,) in rows]
+    return float(np.mean(vals)) if vals else None
+
+
+def _allowed_rate_mean(db: str | Path, team: str, stat: str) -> float | None:
+    """Mean `stat` posted by OPPONENTS against `team` (i.e. what `team` allows)."""
+    team = TEAM_ALIASES.get(team.strip().lower(), team)
+    con = sqlite3.connect(str(db))
+    rows = con.execute(
+        f"SELECT {stat} FROM team_match_stats WHERE opponent=? AND {stat} IS NOT NULL",
+        (team,),
+    ).fetchall()
+    vals = [float(v) for (v,) in rows]
+    return float(np.mean(vals)) if len(vals) >= 3 else None
+
+
+def opponent_adjusted_team_count_rate(
+    db: str | Path, team: str, opponent: str, stat: str, period: str = "full"
+) -> CountRate | None:
+    """`team_count_rate`, blended toward `opponent`'s allowed rate where validated.
+
+    Full-match only -- the correction was measured on full-match rates, so
+    half-split periods fall back to the flat rate untouched. Falls back to the
+    flat rate for any stat without a validated weight (e.g. cards), or when
+    either side lacks enough history for a stable allowed-rate estimate.
+    """
+    base = team_count_rate(db, team, stat, period)
+    if base is None:
+        return None
+    weight = OPPONENT_ADJUSTMENT_WEIGHT.get(stat)
+    if weight is None or period != "full":
+        return base
+    allowed = _allowed_rate_mean(db, opponent, stat)
+    league_avg = _league_average(db, stat)
+    if allowed is None or not league_avg:
+        return base
+    scaled_mean = base.mean * allowed / league_avg
+    blended_mean = (1.0 - weight) * base.mean + weight * scaled_mean
+    return CountRate(mean=blended_mean, var=base.var)
 
 
 # ------------------------------------------------------ validated favorite corrections

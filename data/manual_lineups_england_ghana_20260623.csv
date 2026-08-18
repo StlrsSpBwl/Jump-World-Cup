@@ -1,0 +1,8 @@
+match,team,player_name,status,start_probability,expected_start_minutes,sub_probability,expected_sub_minutes,confirmed,timestamp
+England vs Ghana,England,Harry Kane,starter,1.0,90,0.0,0,1,2026-06-23T19:00:00Z
+England vs Ghana,England,Jude Bellingham,starter,1.0,85,0.0,0,1,2026-06-23T19:00:00Z
+England vs Ghana,England,Anthony Gordon,starter,1.0,75,0.0,0,1,2026-06-23T19:00:00Z
+England vs Ghana,England,Noni Madueke,starter,1.0,75,0.0,0,1,2026-06-23T19:00:00Z
+England vs Ghana,Ghana,Antoine Semenyo,starter,1.0,85,0.0,0,1,2026-06-23T19:00:00Z
+England vs Ghana,Ghana,Jordan Ayew,starter,1.0,85,0.0,0,1,2026-06-23T19:00:00Z
+England vs Ghana,Ghana,Iñaki Williams,starter,1.0,80,0.0,0,1,2026-06-23T19:00:00Z

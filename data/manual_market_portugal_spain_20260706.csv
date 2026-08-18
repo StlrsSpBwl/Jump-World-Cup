@@ -1,0 +1,11 @@
+match,market,selection,decimal_odds,book,timestamp,line,source,definition
+Portugal vs Spain,h2h,Portugal,4.10,draftkings,2026-07-06T00:00:00Z,,web,ML +310
+Portugal vs Spain,h2h,Draw,3.60,draftkings,2026-07-06T00:00:00Z,,web,ML +260
+Portugal vs Spain,h2h,Spain,1.9091,draftkings,2026-07-06T00:00:00Z,,web,ML -110
+Portugal vs Spain,totals,Over,1.80,draftkings,2026-07-06T00:00:00Z,2.5,web,O2.5 -125
+Portugal vs Spain,totals,Under,2.00,draftkings,2026-07-06T00:00:00Z,2.5,web,U2.5 +100
+Spain vs Portugal,h2h,Portugal,4.10,draftkings,2026-07-06T00:00:00Z,,web,ML +310
+Spain vs Portugal,h2h,Draw,3.60,draftkings,2026-07-06T00:00:00Z,,web,ML +260
+Spain vs Portugal,h2h,Spain,1.9091,draftkings,2026-07-06T00:00:00Z,,web,ML -110
+Spain vs Portugal,totals,Over,1.80,draftkings,2026-07-06T00:00:00Z,2.5,web,O2.5 -125
+Spain vs Portugal,totals,Under,2.00,draftkings,2026-07-06T00:00:00Z,2.5,web,U2.5 +100

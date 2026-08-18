@@ -24,14 +24,19 @@ from .closed_form import (
     apply_favorite_dominance,
     count_more_than,
     count_threshold,
+    count_total_pmf,
     count_total_threshold,
     goal_after_minute,
     goal_before_minute,
     goal_props,
     half_split_lambdas,
+    opponent_adjusted_team_count_rate,
+    race_probability,
     team_count_rate,
 )
+from .goals import dixon_coles_matrix
 from .player_props import parse_player_event, player_prop_probability
+from .players import load_match_players
 
 STATS = ("fouls", "corners", "offsides", "cards", "shots_on_target")
 STAT_WORDS = {
@@ -50,12 +55,63 @@ BASE_RATES = {
     "red_card": 0.22,              # a red card shown (knockout base rate)
     "fh_stoppage_goal": 0.11,      # a goal in first-half stoppage time (~3' window, late-half tilt)
     "goal_before_break": None,  # computed from lambda
+    # knockout only: P(still drawn after ET | drawn at 90) -- generic tournament
+    # base rate (not calibrated to this match), combined with the match-specific
+    # P(draw at 90) below.
+    "penalty_shootout_given_draw": 0.33,
 }
+
+
+def _load_player_profiles(db, home, away):
+    """name (lowercased) -> PlayerProfile, for real per-90 rates instead of role priors."""
+    if not db:
+        return {}
+    profiles, _ = load_match_players(db, home, away)
+    return {p.player_name.lower(): p for team in profiles.values() for p in team}
+
+
+def _profile_per90(profile, event: str) -> float | None:
+    """The per-90 rate matching `event`, from a real PlayerProfile (not a role prior)."""
+    if profile is None:
+        return None
+    if event in ("goal_or_assist", "score_or_assist"):
+        return float(profile.goals_per90 + profile.assists_per90)
+    if event in ("shots_on_target", "second_half_shots_on_target"):
+        return float(profile.shots_on_target_per90)
+    return float(profile.goals_per90)  # "goals"
 
 
 def _team_total_goals(lam: float, k: int) -> float:
     """P(a team scores >= k goals), Poisson on its goal expectancy."""
     return float(1.0 - poisson.cdf(k - 1, lam))
+
+
+def _exact_total_goals(lam_h: float, lam_a: float, k: int, rho: float = -0.08) -> float:
+    """P(total goals == k) from the Dixon-Coles scoreline matrix's anti-diagonal."""
+    m = dixon_coles_matrix(lam_h, lam_a, rho)
+    n = m.shape[0]
+    return float(sum(m[i, k - i] for i in range(k + 1) if k - i < n and i < n))
+
+
+def _goal_total_pmf(lam_h: float, lam_a: float, max_n: int, rho: float = -0.08) -> list[float]:
+    """P(total goals == k) for k in 0..max_n, from the Dixon-Coles matrix."""
+    m = dixon_coles_matrix(lam_h, lam_a, rho)
+    n = m.shape[0]
+    return [float(sum(m[i, k - i] for i in range(k + 1) if k - i < n and i < n)) for k in range(max_n + 1)]
+
+
+def _more_stat_than_goals(stat_rate_a, stat_rate_b, lam_h: float, lam_a: float,
+                          max_n: int = 20, rho: float = -0.08) -> float:
+    """P(total `stat` > total goals), treating the two counts as independent."""
+    stat_pmf = count_total_pmf(stat_rate_a, stat_rate_b, max_n)
+    goal_pmf = _goal_total_pmf(lam_h, lam_a, max_n, rho)
+    cum = 0.0
+    total = 0.0
+    for g in range(max_n + 1):
+        p_stat_gt_g = max(0.0, 1.0 - cum - float(stat_pmf[g]))
+        total += goal_pmf[g] * p_stat_gt_g
+        cum += float(stat_pmf[g])
+    return float(total)
 
 
 def _team_both_halves(lam_h, lam_a, subject_is_home):
@@ -85,12 +141,20 @@ def _half_total_goals(lam_h, lam_a, first_half: bool, k: int):
 _FOOTIQO_STATS = {"shots_on_target", "corners", "cards", "shots"}
 
 
-def _team_cr(footiqo, db, team, stat, period):
-    """Team count rate: shrunk current-tournament (Footiqo) when available, else stale DB."""
+def _team_cr(footiqo, db, team, stat, period, opponent=None):
+    """Team count rate: shrunk current-tournament (Footiqo) when available, else stale DB.
+
+    When `opponent` is given, the DB fallback blends toward the opponent's
+    allowed rate where held-out validated (see
+    closed_form.opponent_adjusted_team_count_rate) -- only for single-team
+    threshold props, not comparison props, which weren't validated this way.
+    """
     if footiqo is not None and stat in _FOOTIQO_STATS and period == "full":
         cr = footiqo.team_rate(team, stat)
         if cr is not None:
             return cr
+    if opponent is not None and db:
+        return opponent_adjusted_team_count_rate(db, team, opponent, stat, period)
     return team_count_rate(db, team, stat, period) if db else None
 
 
@@ -159,7 +223,7 @@ def _subject_team(q: str, home: str, away: str) -> str | None:
     return home if ih < ia else away
 
 
-def _route(q, home, away, g, lam_h, lam_a, db, lineup_status, roles, footiqo=None):
+def _route(q, home, away, g, lam_h, lam_a, db, lineup_status, roles, footiqo=None, profiles=None):
     ql = q.lower()
     fav_win = max(g["home_win"], g["away_win"])
 
@@ -170,13 +234,20 @@ def _route(q, home, away, g, lam_h, lam_a, db, lineup_status, roles, footiqo=Non
             if name.lower() in ql:
                 role = (roles or {}).get(name, "forward")
                 k = _num_threshold(q) or 1
-                r = player_prop_probability(event, role, status, k=k)
-                return r["probability"], f"player:{r['basis']}:{event}"
+                per90 = _profile_per90((profiles or {}).get(name.lower()), event)
+                r = player_prop_probability(event, role, status, k=k, per90=per90)
+                rate_source = "profile" if per90 is not None else "role_prior"
+                return r["probability"], f"player:{r['basis']}:{event}:{rate_source}"
 
     # --- knockout / outcome ---
     if "advance" in ql:
         side = "home" if _subject_team(q, home, away) == home else "away"
         return advance_probability(g["home_win"], g["draw"], g["away_win"], side), "advance"
+    if "penalty" in ql and "shootout" in ql:
+        p = g["draw"] * BASE_RATES["penalty_shootout_given_draw"]
+        return float(p), "draw*base:penalty_shootout_given_draw"
+    if "extra time" in ql:
+        return g["draw"], "draw"
     if "ahead at halftime" in ql or ("winning" in ql and "halftime" in ql):
         sub = _subject_team(q, home, away)
         return (g["ht_home_lead"] if sub == home else g["ht_away_lead"]), "ht_lead"
@@ -190,12 +261,29 @@ def _route(q, home, away, g, lam_h, lam_a, db, lineup_status, roles, footiqo=Non
         p = _both_teams_card(footiqo, db, home, away)
         if p is not None:
             return p, "both_teams_card"
+    if "card" in ql and "goal" in ql and "more" in ql and "than" in ql:
+        rh = _team_cr(footiqo, db, home, "cards", "full")
+        ra = _team_cr(footiqo, db, away, "cards", "full")
+        if rh and ra:
+            return _more_stat_than_goals(rh, ra, lam_h, lam_a), "more_stat_than_goals:cards"
+    if "card" in ql and "goal" in ql and "before" in ql:
+        rh = _team_cr(footiqo, db, home, "cards", "full")
+        ra = _team_cr(footiqo, db, away, "cards", "full")
+        if rh and ra:
+            card_rate = rh.mean + ra.mean
+            goal_rate = lam_h + lam_a
+            return race_probability(card_rate, goal_rate), "race:cards_before_goals"
+    if "both halves" in ql and "same number of goals" in ql:
+        return g["equal_half_goals"], "equal_half_goals"
     if "both teams score" in ql:
         return (g["btts_and_3plus"] if "3 or more" in ql or "3+" in ql else g["btts"]), "btts"
     if "2 or fewer total goals" in ql:
         return g["under_2_5"], "under_2_5"
     if "3 or more total goals" in ql or "3+ total" in ql:
         return g["three_or_more"], "three_plus"
+    m_exact = re.search(r"exactly\s*(\d+)\s*total goals", ql)
+    if m_exact:
+        return _exact_total_goals(lam_h, lam_a, int(m_exact.group(1))), "exact_total_goals"
     if "second half" in ql and "more" in ql and "first half" in ql:
         return g["second_half_more_goals"], "2h>1h"
     # half-total goals: "[first/second] half produce N+ goals" (no team) — before the brace rule
@@ -258,8 +346,10 @@ def _route(q, home, away, g, lam_h, lam_a, db, lineup_status, roles, footiqo=Non
                     kind = "sot" if stat == "shots_on_target" else "corners"
                     p = apply_favorite_dominance(p, sub == _favorite_side(g, home, away), fav_win, kind)
                 return p, f"count_more_than:{stat}:{period}"
-            if k is not None and ra:  # single-team threshold
-                return count_threshold(ra, k), f"count_threshold:{stat}:{period}"
+            if k is not None:  # single-team threshold
+                ra_adj = _team_cr(footiqo, db, sub, stat, period, opponent=opp)
+                if ra_adj:
+                    return count_threshold(ra_adj, k), f"count_threshold:{stat}:{period}"
 
     # --- parameterized base rates (unmodeled types) ---
     if "penalty" in ql and "red card" in ql:
@@ -301,7 +391,7 @@ def _match_team(name, home, away):
 _FIXED_BASE = {k: v for k, v in BASE_RATES.items() if isinstance(v, (int, float))}
 
 
-def route_spec(spec, home, away, g, lam_h, lam_a, db, lineup_status, roles, footiqo=None):
+def route_spec(spec, home, away, g, lam_h, lam_a, db, lineup_status, roles, footiqo=None, profiles=None):
     """Map a structured QuestionSpec (from the LLM parser) to (probability, basis)."""
     kind = spec.kind
     fav_win = max(g["home_win"], g["away_win"])
@@ -309,14 +399,17 @@ def route_spec(spec, home, away, g, lam_h, lam_a, db, lineup_status, roles, foot
 
     if kind == "player_prop" and spec.event and spec.player:
         status = "starter"
+        matched_name = spec.player
         if lineup_status:
             for name, st in lineup_status.items():
                 if name.lower() in spec.player.lower() or spec.player.lower() in name.lower():
-                    status = st
+                    status, matched_name = st, name
                     break
         role = (roles or {}).get(spec.player, "forward")
-        r = player_prop_probability(spec.event, role, status, k=spec.threshold or 1)
-        return r["probability"], f"player:{r['basis']}:{spec.event}"
+        per90 = _profile_per90((profiles or {}).get(matched_name.lower()), spec.event)
+        r = player_prop_probability(spec.event, role, status, k=spec.threshold or 1, per90=per90)
+        rate_source = "profile" if per90 is not None else "role_prior"
+        return r["probability"], f"player:{r['basis']}:{spec.event}:{rate_source}"
     if kind == "advance":
         side = "home" if sub == home else "away"
         return advance_probability(g["home_win"], g["draw"], g["away_win"], side), "advance"
@@ -373,8 +466,10 @@ def route_spec(spec, home, away, g, lam_h, lam_a, db, lineup_status, roles, foot
                 corr = "sot" if stat == "shots_on_target" else "corners"
                 p = apply_favorite_dominance(p, subj == _favorite_side(g, home, away), fav_win, corr)
             return p, f"count_more_than:{stat}:{period}"
-        if kind == "count_threshold" and k is not None and ra:
-            return count_threshold(ra, k), f"count_threshold:{stat}:{period}"
+        if kind == "count_threshold" and k is not None:
+            ra_adj = _team_cr(footiqo, db, subj, stat, period, opponent=opp)
+            if ra_adj:
+                return count_threshold(ra_adj, k), f"count_threshold:{stat}:{period}"
     if kind == "base_rate" and spec.base_rate_key in _FIXED_BASE:
         return _FIXED_BASE[spec.base_rate_key], f"base:{spec.base_rate_key}"
     return None, "unrouted"
@@ -402,15 +497,18 @@ def forecast_card(
     tournament instead of the stale DB; None keeps the DB path.
     """
     g = goal_props(lambda_home, lambda_away, rho)
+    profiles = _load_player_profiles(db, home, away)
     out = []
     if specs is not None:
         for spec in specs:
             prob, basis = route_spec(
-                spec, home, away, g, lambda_home, lambda_away, db, lineup_status, roles, footiqo
+                spec, home, away, g, lambda_home, lambda_away, db, lineup_status, roles, footiqo, profiles
             )
             out.append({"question": spec.question, "probability": prob, "basis": basis})
         return out
     for q in questions:
-        prob, basis = _route(q, home, away, g, lambda_home, lambda_away, db, lineup_status, roles, footiqo)
+        prob, basis = _route(
+            q, home, away, g, lambda_home, lambda_away, db, lineup_status, roles, footiqo, profiles
+        )
         out.append({"question": q, "probability": prob, "basis": basis})
     return out

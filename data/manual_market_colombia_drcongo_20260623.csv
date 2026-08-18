@@ -1,0 +1,6 @@
+match,market,selection,decimal_odds,book,timestamp,line,source,definition
+Colombia vs DR Congo,h2h,Colombia,1.526,fanduel,2026-06-23T22:00:00Z,,web,COL -190
+Colombia vs DR Congo,h2h,Draw,4.0,fanduel,2026-06-23T22:00:00Z,,web,Draw +300
+Colombia vs DR Congo,h2h,DR Congo,7.0,fanduel,2026-06-23T22:00:00Z,,web,COD +600
+Colombia vs DR Congo,totals,Under,1.694,fanduel,2026-06-23T22:00:00Z,2.5,web,U2.5 -144
+Colombia vs DR Congo,totals,Over,2.15,fanduel,2026-06-23T22:00:00Z,2.5,web,O2.5

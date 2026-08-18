@@ -466,6 +466,8 @@ def forecast_player_event(
         direct_market_question_type = "anytime_goalscorer"
     elif event == "goal_or_assist" and k == 1:
         direct_market_question_type = "player_goal_or_assist"
+    elif event == "shots_on_target" and k == 1:
+        direct_market_question_type = "shots_on_target"
     if use_market and direct_market_question_type:
         market_probability, market_details = lookup_direct_market_probability(
             database_path,
@@ -491,6 +493,7 @@ def forecast_player_event(
         settings,
         market_probability=market_probability,
         lineup=player_lineup,
+        player_profile=profile,
         crowd_anchor=crowd_anchor,
     )
     probability = contest_agent.probability
@@ -617,6 +620,11 @@ def forecast_match_event(
         mapping_key = "total_goals_2_or_fewer"
         market_selection = None
         market_weight = 1.0
+    elif event == "second_half_more_goals":
+        outcomes = _second_half_more_goals_outcomes(result)
+        mapping_key = None
+        market_selection = None
+        market_weight = settings.thin_market_blend_weight
     else:
         raise ValueError(f"Unsupported match event: {event}")
     model_probability = float(np.mean(outcomes))
@@ -662,6 +670,8 @@ def forecast_match_event(
                 + fallback_result.away_segments["goals"].sum(axis=1)
                 <= 2
             )
+        elif event == "second_half_more_goals":
+            fallback_outcomes = _second_half_more_goals_outcomes(fallback_result)
         model_only_probability = float(np.mean(fallback_outcomes))
     market_probability = None
     market_details: dict[str, Any] = {}
@@ -749,6 +759,14 @@ def _goal_calibration(
     if calibration.source == "model_only":
         calibration.fusion_details.update(fallback_details)
     return calibration
+
+
+def _second_half_more_goals_outcomes(result: Any) -> np.ndarray:
+    home_goals = result.home_segments["goals"]
+    away_goals = result.away_segments["goals"]
+    first_half = home_goals[:, :3].sum(axis=1) + away_goals[:, :3].sum(axis=1)
+    second_half = home_goals[:, 3:].sum(axis=1) + away_goals[:, 3:].sum(axis=1)
+    return second_half > first_half
 
 
 def _fallback_calibration(

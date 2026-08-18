@@ -154,3 +154,55 @@ def test_outcome_and_total_routing():
                         db=str(DB))
     assert _by_q(res, "both teams score")["basis"] == "btts"
     assert _by_q(res, "2 or fewer")["basis"] == "under_2_5"
+
+
+def test_player_prop_uses_real_profile_per90_not_role_prior():
+    # Haaland's real goals_per90 (~1.40) is far above the generic "forward" role
+    # prior (0.40) -- the card must prefer the DB profile when one exists.
+    res = forecast_card("Brazil", "Norway", 1.67, 1.04,
+                        ["Will Erling Haaland (Norway) score a goal in regulation?"],
+                        db=str(DB), lineup_status={"Erling Haaland": "starter"},
+                        roles={"Erling Haaland": "striker"})
+    r = res[0]
+    assert r["basis"] == "player:starter:goals:profile"
+    # role-prior striker rate (0.48/90) over 82 min -> ~0.35; real per90 (~1.40) -> much higher
+    assert r["probability"] > 0.55
+
+
+def test_more_cards_than_goals_route():
+    res = forecast_card("England", "Mexico", 1.25, 1.0,
+                        ["Will there be more total cards than total goals in regulation?"],
+                        db=str(DB))
+    r = res[0]
+    assert r["basis"] == "more_stat_than_goals:cards"
+    assert 0.0 < r["probability"] < 1.0
+
+
+def test_exact_total_goals_and_penalty_shootout_route():
+    res = forecast_card("Brazil", "Norway", 1.67, 1.04,
+                        ["Will the match finish with exactly 2 total goals in regulation?",
+                         "Will the match be decided by a penalty shootout?"],
+                        db=str(DB))
+    exact = _by_q(res, "exactly 2")
+    assert exact["basis"] == "exact_total_goals"
+    assert 0.0 < exact["probability"] < 0.4
+    shootout = _by_q(res, "penalty shootout")
+    assert shootout["basis"] == "draw*base:penalty_shootout_given_draw"
+    # draw probability * 0.33 conditional, must be well under the draw prob itself
+    assert 0.0 < shootout["probability"] < 0.15
+
+
+def test_extra_time_equal_halves_and_card_before_goal_race_route():
+    res = forecast_card("Portugal", "Spain", 1.04, 1.58,
+                        ["Will the match go to extra time?",
+                         "Will both halves have the same number of goals in regulation?",
+                         "Will the first card of the match be shown before the first goal is scored?"],
+                        db=str(DB))
+    et = _by_q(res, "extra time")
+    assert et["basis"] == "draw"
+    eq = _by_q(res, "same number of goals")
+    assert eq["basis"] == "equal_half_goals"
+    assert 0.0 < eq["probability"] < 1.0
+    race = _by_q(res, "before the first goal")
+    assert race["basis"] == "race:cards_before_goals"
+    assert 0.0 < race["probability"] < 1.0

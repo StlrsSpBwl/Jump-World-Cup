@@ -1,0 +1,11 @@
+match,market,selection,decimal_odds,book,timestamp,line,source,definition
+England vs Mexico,h2h,England,2.25,espn_dk,2026-07-05T00:00:00Z,,web,ML +125
+England vs Mexico,h2h,Draw,3.20,espn_dk,2026-07-05T00:00:00Z,,web,ML +220
+England vs Mexico,h2h,Mexico,3.05,espn_dk,2026-07-05T00:00:00Z,,web,ML +205
+England vs Mexico,totals,Over,2.45,espn_dk,2026-07-05T00:00:00Z,2.5,web,O2.5 +145
+England vs Mexico,totals,Under,1.540541,espn_dk,2026-07-05T00:00:00Z,2.5,web,U2.5 -185
+Mexico vs England,h2h,England,2.25,espn_dk,2026-07-05T00:00:00Z,,web,ML +125
+Mexico vs England,h2h,Draw,3.20,espn_dk,2026-07-05T00:00:00Z,,web,ML +220
+Mexico vs England,h2h,Mexico,3.05,espn_dk,2026-07-05T00:00:00Z,,web,ML +205
+Mexico vs England,totals,Over,2.45,espn_dk,2026-07-05T00:00:00Z,2.5,web,O2.5 +145
+Mexico vs England,totals,Under,1.540541,espn_dk,2026-07-05T00:00:00Z,2.5,web,U2.5 -185

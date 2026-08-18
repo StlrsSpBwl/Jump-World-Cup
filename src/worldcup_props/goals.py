@@ -228,6 +228,11 @@ def total_over_probability(matrix: np.ndarray, line: float) -> float:
     return _asian_win_equivalent(matrix, total.astype(float) - line)
 
 
+def both_teams_score_probability(matrix: np.ndarray) -> float:
+    """P(both teams score) — both teams record one or more goals."""
+    return float(matrix[1:, 1:].sum())
+
+
 def handicap_probability(matrix: np.ndarray, side: str, line: float) -> float:
     home_goals, away_goals = np.indices(matrix.shape)
     margin = home_goals - away_goals
@@ -279,6 +284,17 @@ def _targets_from_quotes(quotes: list[dict[str, Any]]) -> list[GoalMarketTarget]
                     float(quote["probability"]),
                     weight,
                     lambda matrix, line=float(line): total_over_probability(matrix, line),
+                )
+            )
+        elif market_type == "btts" and selection == "yes":
+            # BTTS pins the home/away goal split that h2h+totals leave
+            # under-determined, so weight it like an h2h leg.
+            targets.append(
+                GoalMarketTarget(
+                    "btts:yes",
+                    float(quote["probability"]),
+                    2.0,
+                    lambda matrix: both_teams_score_probability(matrix),
                 )
             )
         elif (
